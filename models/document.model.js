@@ -21,7 +21,6 @@ var DocumentSchema = new Schema({
         type: String
     },
     uploadedBy: {
-        type: String
     },
     uploadedDate: {
         type: Date
@@ -35,8 +34,9 @@ var DocumentSchema = new Schema({
     version: {
         type: String
     },
-    conflicts: {
-        type: Array
+    _deleted: {
+        type: Boolean,
+        default: false
     }
 });
 
