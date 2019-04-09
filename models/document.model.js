@@ -21,6 +21,7 @@ var DocumentSchema = new Schema({
         type: String
     },
     uploadedBy: {
+        type: Object
     },
     uploadedDate: {
         type: Date
