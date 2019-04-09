@@ -31,7 +31,7 @@ router.route('/labelling/getAllProjects').post(dashboardController.getAllProject
 
 router.post('/markFavorite', favouriteController.create);
 router.post('/updateFavorite/:id', favouriteController.update);
-router.post('/unMarksFavorite', favouriteController.delete);
+router.post('/unMarkFavorite', favouriteController.delete);
 router.post('/getFavorites', favouriteController.getAll);
 
 
