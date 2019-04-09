@@ -100,7 +100,7 @@ exports.compare = function (req, res) {
                             // conflictDoc.fileType = 'CONFLICT';
                             // conflictDoc.destination = fileVirtualPath + "/" + id + '/' + element.documentName;
                             // conflictDoc.location = fileUploadPath + '/' + id;
-                            payload.label_filepath = path.resolve('./', conflictDoc.location, conflictDoc.documentName);
+                            payload.lpd_filepath = path.resolve('./', conflictDoc.location, conflictDoc.documentName);
                             break;
                         case 'Reference':
                             payload.reference_filepath.push(filePath);
@@ -119,6 +119,7 @@ exports.compare = function (req, res) {
                             break;
                     }
                 });
+
                 const options = {
                     uri: 'http://34.204.2.145:3001/',
                     method: 'POST',
