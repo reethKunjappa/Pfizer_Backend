@@ -20,13 +20,13 @@ var ProductLabelSchema = new Schema({
     type: Date
   },
   conflicts: {
-    type: Object
-  },
-  /* conflictCount: {
-    type: Number
-  }, */
-  favorite: {
-    type: Boolean
+    total: { type: Number },
+    types: {
+      font: Number,
+      order: Number,
+      content: Number
+    },
+    comments: []
   },
   documents: [{ type: mongoose.Schema.ObjectId, ref: DocumentSchema }]
 });

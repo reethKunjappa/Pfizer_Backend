@@ -3,3 +3,4 @@ node_modules/
 mochawesome-report/
 uploads/
 fs/
+.vscode/
