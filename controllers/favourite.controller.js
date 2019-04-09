@@ -8,8 +8,8 @@ module.exports.create = function (req, res, next) {
     var fav = req.body;
 
     return Favourite.findOne(fav)
-        .then(function (fav) {
-            if (fav) {
+        .then(function (this_fav) {
+            if (this_fav) {
                 throw new Error("Favourite already exists");
             }
             return Favourite.create(fav)
@@ -23,9 +23,13 @@ module.exports.create = function (req, res, next) {
 
 module.exports.getAll = function (req, res, next) {
     var query = req.body;
-    return Favourite.find(query).populate('project')
+    return Favourite.find(query).populate('project').lean()
         .then(function (favourites) {
-            favourites = _.map(favourites, 'project')
+            favourites = _.map(favourites, function(fav){
+                fav.project.favorite = true;
+                return fav.project;
+            })
+
             return res.send({ result: favourites, status: { code: 0, message: "Get Favourite" } });
         }).catch(function (err) {
             console.error(err);
