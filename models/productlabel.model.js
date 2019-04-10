@@ -20,11 +20,23 @@ var ProductLabelSchema = new Schema({
     type: Date
   },
   conflicts: {
-    total: { type: Number },
+    total: {
+      type: Number,
+      default: 0
+    },
     types: {
-      font: Number,
-      order: Number,
-      content: Number
+      font: {
+        type: Number,
+        default: 0
+      },
+      order: {
+        type: Number,
+        default: 0
+      },
+      content: {
+        type: Number,
+        default: 0
+      }
     },
     comments: []
   },
