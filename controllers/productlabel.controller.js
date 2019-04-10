@@ -5,9 +5,6 @@ var FavouriteSchema = require('../models/favourite.model');
 const { responseGenerator } = require('../utility/commonUtils');
 var { mkdir } = require('../utility/commonUtils');
 var http = require('http');
-<<<<<<< HEAD
-var _ = require('lodash');
-=======
 var path = require('path');
 var rp = require('request-promise');
 var fs = require('fs');
@@ -15,7 +12,6 @@ var uuid = require('uuid-v4');
 const appConfig = require('../config/appConfig');
 var _ = require('lodash');
 require('mongoose').set('debug', true);
->>>>>>> 333d4836d94c84394d2ccb88d63508d28c1a5c34
 
 exports.newProject = function (req, res) {
     var productLabel = new ProductLabel();
@@ -46,7 +42,7 @@ exports.newProject = function (req, res) {
 
 exports.getProjects = function (req, res) {
     try {
-        ProductLabel.find({}).sort({ modifiedDate: 'desc' }).exec(function (err, projects) {
+        ProductLabel.find({}, {'conflicts.comments':0}).sort({ modifiedDate: 'desc' }).exec(function (err, projects) {
             if (err)
                 res.json(responseGenerator(-1, "Unable to retrieve Projects list", err));
             else{
@@ -63,7 +59,7 @@ exports.getProjects = function (req, res) {
 
 exports.viewProject = function (req, res) {
     try {
-        ProductLabel.findOne({ _id: req.body._id }).populate('documents').exec(function (err, project) {
+        ProductLabel.findOne({ _id: req.body._id },{'conflicts.comments': 0 }).populate('documents').exec(function (err, project) {
             if (err)
                 res.json(responseGenerator(-1, "Unable to fetch the Project details", err));
             else
@@ -194,3 +190,16 @@ function getUserFav (req, res, projects) {
         console.log(e);
     }
 }; 
+
+exports.viewConflictProject = function (req, res) {
+    try {
+        ProductLabel.findOne({ _id: req.body._id }).populate('documents').exec(function (err, project) {
+            if (err)
+                res.json(responseGenerator(-1, "Unable to fetch the Project details", err));
+            else
+                res.json(responseGenerator(0, "Successfully retrieved Project details", project, 0));
+        });
+    } catch (e) {
+        console.log(e);
+    }
+};
