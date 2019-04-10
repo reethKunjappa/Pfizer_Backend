@@ -146,7 +146,15 @@ exports.compare = function (req, res) {
             }
             project.conflicts = result.conflicts;
             project.conflicts.types = _.extend(project.conflicts.types, result.conflicts.conflict_type);
-            project.conflicts.comments = result.comments;
+            project.conflicts.comments = _.map(result.comments, function (comment) {
+                return _.mapKeys(comment, function (value, key) {
+                    switch (key) {
+                        case 'comment_text': return "text";
+                        case 'conflict_type': return "type";
+                        default: return key;
+                    }
+                });
+            });
             return project.save();
         }).then(function (projectObj) {
             return res.send(responseGenerator(1, "Compared document", projectObj));
