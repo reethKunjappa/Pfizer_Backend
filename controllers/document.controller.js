@@ -55,7 +55,7 @@ exports.uploadFile = function (req, resp) {
                                 deleteFolder(path.resolve(process.cwd(), documentSchema.location))
                             }
                             documentSchema.location = fileUploadPath;
-                            documentSchema.uploadedBy = req.query.uploadedBy;
+                            documentSchema.uploadedBy = JSON.parse(req.query.uploadedBy);
                             documentSchema.uploadedDate = new Date();
                             documentSchema.save(function (err) {
                                 if (err) {

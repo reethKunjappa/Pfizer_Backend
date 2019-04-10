@@ -2,6 +2,23 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 var { DocumentSchema } = require("../models/document.model");
 
+var CommentSchema = new Schema({
+  text: {
+    type: String,
+  },
+  type: {
+    type: String,
+  },
+  referenceDoc: {},
+  action: {
+    type: String
+  },
+  actionBy: {},
+  actionOn: {
+    type: Date
+  }
+});
+
 var ProductLabelSchema = new Schema({
   projectName: {
     type: String,
@@ -38,9 +55,11 @@ var ProductLabelSchema = new Schema({
         default: 0
       }
     },
-    comments: []
+    comments: [CommentSchema]
   },
   documents: [{ type: mongoose.Schema.ObjectId, ref: DocumentSchema }]
-});
+}, {
+    timestamps: true
+  });
 
 module.exports = mongoose.model("ProductLabel", ProductLabelSchema);
