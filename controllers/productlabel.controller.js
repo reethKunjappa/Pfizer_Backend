@@ -90,7 +90,8 @@ exports.compare = function (req, res) {
                     "previousLabel_filepath": [],
                     "fontFormat_filepath": [],
                     "reference_filepath": [],
-                    "country_name": project.country.name
+                    // "country_name": project.country.name
+                    "country_name": "Saudi Arabia"
                 };
                 var basePath = path.resolve('./');
 
@@ -140,6 +141,9 @@ exports.compare = function (req, res) {
                 throw new Error();
             }
         }).then(function (result) {
+            if (result.error) {
+                throw new Error(result.message);
+            }
             project.conflicts = result.conflicts;
             project.conflicts.types = _.extend(project.conflicts.types, result.conflicts.conflict_type);
             project.conflicts.comments = result.comments;
