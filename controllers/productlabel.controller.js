@@ -42,14 +42,14 @@ exports.newProject = function (req, res) {
 
 exports.getProjects = function (req, res) {
     try {
-        ProductLabel.find({}, {'conflicts.comments':0}).sort({ modifiedDate: 'desc' }).exec(function (err, projects) {
+        ProductLabel.find({}, { 'conflicts.comments': 0 }).sort({ modifiedDate: 'desc' }).exec(function (err, projects) {
             if (err)
                 res.json(responseGenerator(-1, "Unable to retrieve Projects list", err));
-            else{
-                    getUserFav(req, res, projects);
+            else {
+                getUserFav(req, res, projects);
                 //res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
             }
-                
+
         });
     } catch (e) {
         console.log(e);
@@ -59,7 +59,7 @@ exports.getProjects = function (req, res) {
 
 exports.viewProject = function (req, res) {
     try {
-        ProductLabel.findOne({ _id: req.body._id },{'conflicts.comments': 0 }).populate('documents').exec(function (err, project) {
+        ProductLabel.findOne({ _id: req.body._id }, { 'conflicts.comments': 0 }).populate('documents').exec(function (err, project) {
             if (err)
                 res.json(responseGenerator(-1, "Unable to fetch the Project details", err));
             else
@@ -90,6 +90,7 @@ exports.compare = function (req, res) {
                     "previousLabel_filepath": [],
                     "fontFormat_filepath": [],
                     "reference_filepath": [],
+                    "country_name": project.country.name
                 };
                 var basePath = path.resolve('./');
 
@@ -104,7 +105,7 @@ exports.compare = function (req, res) {
                             // conflictDoc.fileType = 'CONFLICT';
                             // conflictDoc.destination = fileVirtualPath + "/" + id + '/' + element.documentName;
                             // conflictDoc.location = fileUploadPath + '/' + id;
-                            payload.lpd_filepath = path.resolve('./', conflictDoc.location, conflictDoc.documentName);
+                            payload.label_filepath = path.resolve('./', conflictDoc.location, conflictDoc.documentName);
                             break;
                         case 'Reference':
                             payload.reference_filepath.push(filePath);
@@ -140,7 +141,7 @@ exports.compare = function (req, res) {
             }
         }).then(function (result) {
             project.conflicts = result.conflicts;
-            project.conflicts.types = result.conflicts.conflict_type;
+            project.conflicts.types = _.extend(project.conflicts.types, result.conflicts.conflict_type);
             project.conflicts.comments = result.comments;
             return project.save();
         }).then(function (projectObj) {
@@ -167,17 +168,17 @@ exports.updateProject = function (req, res) {
 
 };
 
-function getUserFav (req, res, projects) {
+function getUserFav(req, res, projects) {
     try {
-        FavouriteSchema.find({'user.userId': req.body.user.userId}).exec(function (err, userFavprojects) {
+        FavouriteSchema.find({ 'user.userId': req.body.user.userId }).exec(function (err, userFavprojects) {
             if (err)
                 res.json(responseGenerator(-1, "Unable to retrieve Projects list", err));
             else {
-                var userFav = _.groupBy(userFavprojects,'project');
-                projects.forEach(function(key){
-                    if(userFav[key._id]){
-                        key.favorite= true
-                    }else{
+                var userFav = _.groupBy(userFavprojects, 'project');
+                projects.forEach(function (key) {
+                    if (userFav[key._id]) {
+                        key.favorite = true
+                    } else {
                         key.favorite = false;
                     }
                     return key;
@@ -189,7 +190,7 @@ function getUserFav (req, res, projects) {
     } catch (e) {
         console.log(e);
     }
-}; 
+};
 
 exports.viewConflictProject = function (req, res) {
     try {
