@@ -1,9 +1,13 @@
 var jwt = require('jsonwebtoken');
 var config = require('../config/database');
 const { ProductLabel, DocumentSchema } = require('../models/model');
+var FavouriteSchema = require('../models/favourite.model');
 const { responseGenerator } = require('../utility/commonUtils');
 var { mkdir } = require('../utility/commonUtils');
 var http = require('http');
+<<<<<<< HEAD
+var _ = require('lodash');
+=======
 var path = require('path');
 var rp = require('request-promise');
 var fs = require('fs');
@@ -11,6 +15,7 @@ var uuid = require('uuid-v4');
 const appConfig = require('../config/appConfig');
 var _ = require('lodash');
 require('mongoose').set('debug', true);
+>>>>>>> 333d4836d94c84394d2ccb88d63508d28c1a5c34
 
 exports.newProject = function (req, res) {
     var productLabel = new ProductLabel();
@@ -44,8 +49,11 @@ exports.getProjects = function (req, res) {
         ProductLabel.find({}).sort({ modifiedDate: 'desc' }).exec(function (err, projects) {
             if (err)
                 res.json(responseGenerator(-1, "Unable to retrieve Projects list", err));
-            else
-                res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
+            else{
+                    getUserFav(req, res, projects);
+                //res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
+            }
+                
         });
     } catch (e) {
         console.log(e);
@@ -162,3 +170,27 @@ exports.updateProject = function (req, res) {
     });
 
 };
+
+function getUserFav (req, res, projects) {
+    try {
+        FavouriteSchema.find({'user.userId': req.body.user.userId}).exec(function (err, userFavprojects) {
+            if (err)
+                res.json(responseGenerator(-1, "Unable to retrieve Projects list", err));
+            else {
+                var userFav = _.groupBy(userFavprojects,'project');
+                projects.forEach(function(key){
+                    if(userFav[key._id]){
+                        key.favorite= true
+                    }else{
+                        key.favorite = false;
+                    }
+                    return key;
+                })
+                res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
+            }
+
+        });
+    } catch (e) {
+        console.log(e);
+    }
+}; 
