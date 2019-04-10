@@ -20,6 +20,7 @@ router.route('/labelling/createProject').post(productlabelController.newProject)
 router.route('/labelling/getProjects').post(productlabelController.getProjects);
 router.route('/labelling/updateProject').post(productlabelController.updateProject);
 router.route('/labelling/viewProject').post(productlabelController.viewProject);
+router.route('/labelling/viewConflictProject').post(productlabelController.viewConflictProject);
 router.route('/labelling/compare').post(productlabelController.compare);
 
 
