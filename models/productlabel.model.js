@@ -11,7 +11,8 @@ var CommentSchema = new Schema({
   },
   referenceDoc: {},
   action: {
-    type: String
+    type: String,
+    enum: ['ACCEPT', 'REJECT']
   },
   actionBy: {},
   actionOn: {
@@ -53,7 +54,11 @@ var ProductLabelSchema = new Schema({
       content: {
         type: Number,
         default: 0
-      }
+      },
+      spellCheck: {
+        type: Number,
+        default: 0
+      },
     },
     comments: [CommentSchema]
   },
