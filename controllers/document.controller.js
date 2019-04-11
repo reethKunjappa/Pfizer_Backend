@@ -10,6 +10,8 @@ var path = require('path');
 var fileUploadPath = "";
 var fileName = "";
 var multer = require('multer');
+var convert = require('./../utility/convert');
+
 var storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, fileUploadPath)
@@ -38,6 +40,7 @@ exports.uploadFile = function (req, resp) {
                 if (err) {
                     resp.json(responseGenerator(-1, "Unable to Uploaded Document", ""));
                 } else {
+
                     //Seggrgate old and new document schemas here
                     checkForOldDocuments(file, req.query, function (oldDocuments) {
                         for (var i = 0; i < file.length; i++) {
@@ -58,13 +61,22 @@ exports.uploadFile = function (req, resp) {
                             documentSchema.location = fileUploadPath;
                             documentSchema.uploadedBy = JSON.parse(req.query.uploadedBy);
                             documentSchema.uploadedDate = new Date();
-                            documentSchema.save(function (err) {
-                                if (err) {
-                                    resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
-                                } else {
-                                    updateProjectLabelInfo(req, resp, documentSchema, req.query.projectId, documentSchema._id, (oldDocuments[documentSchema.documentName] === undefined));
-                                }
-                            });
+
+                            convertToImage(path.extname(documentSchema.documentName), path.resolve(documentSchema.location, documentSchema.documentName), function (err, imagePaths) {
+                                documentSchema.imagePaths = _.map(imagePaths, function (imagePath) {
+                                    return {
+                                        location: imagePath,
+                                        destination: fileVirtualPath + "/" + documentId + "/" + path.basename(imagePath)
+                                    }
+                                });
+                                documentSchema.save(function (err) {
+                                    if (err) {
+                                        resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
+                                    } else {
+                                        updateProjectLabelInfo(req, resp, documentSchema, req.query.projectId, documentSchema._id, (oldDocuments[documentSchema.documentName] === undefined));
+                                    }
+                                });
+                            })
                         }
                     })
                 }
@@ -77,6 +89,16 @@ exports.uploadFile = function (req, resp) {
         console.log(e);
     }
 };
+
+function convertToImage(ext, path, callback) {
+    if (ext === '.pdf') {
+        convert.convertPdfToImage(path, callback)
+    } else if (ext === '.docx') {
+        convert.convertDocToImage(path, callback)
+    } else {
+        callback(null, [])
+    }
+}
 
 
 function checkForOldDocuments(files, reqQuery, callback) {
