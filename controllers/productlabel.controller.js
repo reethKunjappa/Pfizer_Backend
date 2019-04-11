@@ -181,6 +181,9 @@ exports.updateProject = function (req, res) {
 };
 
 function getUserFav(req, res, projects) {
+    if (req.body.user==undefined){
+        return res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
+    }
     try {
         FavouriteSchema.find({ 'user.userId': req.body.user.userId }).exec(function (err, userFavprojects) {
             if (err)
