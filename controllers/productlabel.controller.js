@@ -19,12 +19,13 @@ var convert = require('./../utility/convert').convertDocToImage;
 exports.newProject = function (req, res) {
     var productLabel = new ProductLabel();
     var conflicts = {
-        number: 0,
+        total: 0,
         types: {
-            fontConflicts: 0,
-            contentConflicts: 0,
-            orderConflicts: 0,
-        }
+            font: 0,
+            content: 0,
+            order: 0,
+        },
+        comments: []
     };
     productLabel.projectName = req.body.projectName;
     productLabel.country = req.body.country;
@@ -188,13 +189,9 @@ exports.updateProject = function (req, res) {
 };
 
 function getUserFav(req, res, projects) {
-<<<<<<< HEAD
-  
-=======
     if (req.body.user == undefined) {
         return res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
     }
->>>>>>> 047cf2eacb136605d0415ccc43a4754f45dee760
     try {
         FavouriteSchema.find({ 'user.userId': req.body.user.userId }).lean().exec(function (err, userFavprojects) {
             if (err)
@@ -202,11 +199,11 @@ function getUserFav(req, res, projects) {
             else {
                 var userFav = _.groupBy(userFavprojects, 'project');
                 projects.forEach(function (key) {
-                     if (userFav[key._id]) {
+                    if (userFav[key._id]) {
                         key.favorite = true
                     } else {
                         key.favorite = false;
-                    } 
+                    }
                     return key;
                 })
                 res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
