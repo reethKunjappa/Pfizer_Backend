@@ -13,6 +13,9 @@ const appConfig = require('../config/appConfig');
 var _ = require('lodash');
 require('mongoose').set('debug', true);
 
+var convert = require('./../utility/convert').convertToImage;
+
+
 exports.newProject = function (req, res) {
     var productLabel = new ProductLabel();
     var conflicts = {
@@ -77,7 +80,7 @@ exports.compare = function (req, res) {
     };
     var fileUploadPath = appConfig["FS_PATH"];
     var fileVirtualPath = appConfig["DOCUMENT_VIEW_PATH"];
-
+    var cfilePath;
     return ProductLabel.findOne({ _id: req.body._id }).populate('documents')
         .then(function (_project) {
             project = _project;
@@ -144,6 +147,7 @@ exports.compare = function (req, res) {
             if (result.error) {
                 throw new Error(result.message);
             }
+            cfilePath = result.filePath;
             project.conflicts = result.conflicts;
             project.conflicts.types = _.extend(project.conflicts.types, result.conflicts.conflict_type);
             project.conflicts.comments = _.map(result.comments, function (comment) {
@@ -158,7 +162,9 @@ exports.compare = function (req, res) {
             });
             return project.save();
         }).then(function (projectObj) {
-            return res.send(responseGenerator(1, "Compared document", projectObj));
+            convert(cfilePath, function (imagePaths) {
+                return res.send(responseGenerator(1, "Compared document", projectObj));
+            })
         }).catch(function (err) {
             console.log(err);
             return res.status(400).send({ success: false, err: err.message });

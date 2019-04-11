@@ -6,6 +6,7 @@ var DocumentSchema = new Schema({
         type: String,
         required: true
     },
+    imagePaths: [],
     documentid: {
         type: String,
         required: true,
