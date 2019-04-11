@@ -13,7 +13,7 @@ const appConfig = require('../config/appConfig');
 var _ = require('lodash');
 require('mongoose').set('debug', true);
 
-var convert = require('./../utility/convert').convertToImage;
+var convert = require('./../utility/convert').convertDocToImage;
 
 
 exports.newProject = function (req, res) {
@@ -147,7 +147,7 @@ exports.compare = function (req, res) {
             if (result.error) {
                 throw new Error(result.message);
             }
-            cfilePath = result.filePath;
+            cfilePath = result.filepath;
             project.conflicts = result.conflicts;
             project.conflicts.types = _.extend(project.conflicts.types, result.conflicts.conflict_type);
             project.conflicts.comments = _.map(result.comments, function (comment) {
@@ -188,7 +188,7 @@ exports.updateProject = function (req, res) {
 };
 
 function getUserFav(req, res, projects) {
-    if (req.body.user==undefined){
+    if (req.body.user == undefined) {
         return res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
     }
     try {
