@@ -29,7 +29,8 @@ exports.uploadFile = function (req, resp) {
         function createUUID() {
             return documentId = uuid();
         }
-        fileUploadPath = fileUploadPath + "/" + createUUID();
+        var id = createUUID();
+        fileUploadPath = fileUploadPath + "/" + id;
         mkdir(fileUploadPath);
         upload(req, resp, function (err) {
             if (req.files != null && req.files.length > 0) {
@@ -40,7 +41,7 @@ exports.uploadFile = function (req, resp) {
                     //Seggrgate old and new document schemas here
                     checkForOldDocuments(file, req.query, function (oldDocuments) {
                         for (var i = 0; i < file.length; i++) {
-                            var documentId = createUUID();
+                            var documentId = id;
                             var documentSchema = new DocumentSchema();
                             if (!oldDocuments[file[i].originalname]) {
                                 documentSchema.documentName = file[i].originalname;
