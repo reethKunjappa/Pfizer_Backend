@@ -151,6 +151,7 @@ exports.compare = function (req, res) {
                     switch (key) {
                         case 'comment_text': return "text";
                         case 'conflict_type': return "type";
+                        case 'reference_doc': return 'referenceDoc'
                         default: return key;
                     }
                 });

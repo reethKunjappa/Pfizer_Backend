@@ -9,7 +9,7 @@ var CommentSchema = new Schema({
   type: {
     type: String,
   },
-  referenceDoc: {},
+  referenceDoc: String,
   action: {
     type: String,
     enum: ['ACCEPT', 'REJECT']
