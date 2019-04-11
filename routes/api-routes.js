@@ -22,6 +22,7 @@ router.route('/labelling/updateProject').post(productlabelController.updateProje
 router.route('/labelling/viewProject').post(productlabelController.viewProject);
 router.route('/labelling/viewConflictProject').post(productlabelController.viewConflictProject);
 router.route('/labelling/compare').post(productlabelController.compare);
+router.route('/labelling/commentAck').post(productlabelController.commentAck);
 
 
 // File Upload

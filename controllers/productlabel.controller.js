@@ -42,7 +42,7 @@ exports.newProject = function (req, res) {
 
 exports.getProjects = function (req, res) {
     try {
-        ProductLabel.find({}, { 'conflicts.comments': 0 }).sort({ modifiedDate: 'desc' }).exec(function (err, projects) {
+        ProductLabel.find({}, { 'conflicts.comments': 0 }).lean().sort({ modifiedDate: 'desc' }).exec(function (err, projects) {
             if (err)
                 res.json(responseGenerator(-1, "Unable to retrieve Projects list", err));
             else {
@@ -182,21 +182,19 @@ exports.updateProject = function (req, res) {
 };
 
 function getUserFav(req, res, projects) {
-    if (req.body.user==undefined){
-        return res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
-    }
+  
     try {
-        FavouriteSchema.find({ 'user.userId': req.body.user.userId }).exec(function (err, userFavprojects) {
+        FavouriteSchema.find({ 'user.userId': req.body.user.userId }).lean().exec(function (err, userFavprojects) {
             if (err)
                 res.json(responseGenerator(-1, "Unable to retrieve Projects list", err));
             else {
                 var userFav = _.groupBy(userFavprojects, 'project');
                 projects.forEach(function (key) {
-                    if (userFav[key._id]) {
+                     if (userFav[key._id]) {
                         key.favorite = true
                     } else {
                         key.favorite = false;
-                    }
+                    } 
                     return key;
                 })
                 res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
@@ -219,4 +217,17 @@ exports.viewConflictProject = function (req, res) {
     } catch (e) {
         console.log(e);
     }
+};
+
+exports.commentAck = function (req, res) {
+    /* 
+    ProductLabel.update({ 'comments._id': request.body.comments._id }, 
+        { $set: { 'comments.action': request.comets.action. } }, 
+        { upsert: true }, function (err) {
+
+        }) */
+
+
+
+
 };
