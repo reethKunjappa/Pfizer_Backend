@@ -25,7 +25,7 @@ exports.newProject = function (req, res) {
             content: 0,
             order: 0,
         },
-        comments: []
+        comments:[]
     };
     productLabel.projectName = req.body.projectName;
     productLabel.country = req.body.country;
@@ -189,9 +189,7 @@ exports.updateProject = function (req, res) {
 };
 
 function getUserFav(req, res, projects) {
-    if (req.body.user == undefined) {
-        return res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
-    }
+  
     try {
         FavouriteSchema.find({ 'user.userId': req.body.user.userId }).lean().exec(function (err, userFavprojects) {
             if (err)
@@ -199,11 +197,11 @@ function getUserFav(req, res, projects) {
             else {
                 var userFav = _.groupBy(userFavprojects, 'project');
                 projects.forEach(function (key) {
-                    if (userFav[key._id]) {
+                     if (userFav[key._id]) {
                         key.favorite = true
                     } else {
                         key.favorite = false;
-                    }
+                    } 
                     return key;
                 })
                 res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
