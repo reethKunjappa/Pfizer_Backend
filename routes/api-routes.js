@@ -10,6 +10,7 @@ var productlabelController = require('../controllers/productlabel.controller');
 var documentController = require('../controllers/document.controller');
 var dashboardController = require('../controllers/dashboard.controller');
 var favouriteController = require('../controllers/favourite.controller');
+var commentsController = require('../controllers/comments.controller');
 
 //authController
 router.route('/auth/register').post(authController.new);
@@ -30,11 +31,17 @@ router.route('/labelling/upload').post(documentController.uploadFile);
 
 // File Upload
 router.route('/labelling/getAllProjects').post(dashboardController.getAllProjects);
-
+//Favorites 
 router.post('/markFavorite', favouriteController.create);
 router.post('/updateFavorite/:id', favouriteController.update);
 router.post('/unMarkFavorite', favouriteController.delete);
 router.post('/getFavorites', favouriteController.getAll);
+
+//Comments
+router.post('/labelling/createComments', commentsController.createComments);
+router.post('/labelling/updateComments', commentsController.updateComments);
+//router.post('/deleteComments', commentsController.deleteComments);
+router.post('/labelling/getAllComments', commentsController.getAllComments);
 
 
 // Verify JWT Jokens from REST

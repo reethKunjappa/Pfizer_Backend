@@ -27,6 +27,7 @@
     "nodemon": "^1.18.10",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
+    "pdf-image": "^2.0.0",
     "pdftoimage": "^1.0.0",
     "phantomjs-prebuilt": "^2.1.16",
     "request": "^2.88.0",

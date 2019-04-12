@@ -227,14 +227,14 @@ exports.viewConflictProject = function (req, res) {
 };
 
 exports.commentAck = function (req, res) {
-    /* 
-    ProductLabel.update({ 'comments._id': request.body.comments._id }, 
-        { $set: { 'comments.action': request.comets.action. } }, 
-        { upsert: true }, function (err) {
 
-        }) */
+   /*  ProductLabel.findById(req.body.objectId, function (err, project) {
 
+        if (err) return res.json(responseGenerator(-1, "Unable to fetch the Project details", err))
+        else{
+            res.json(responseGenerator(0, "Successfully retrieved Project details", project, 0));
+        }
+    } );  */
+    
 
-
-
-};
+    };
