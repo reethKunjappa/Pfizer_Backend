@@ -14,4 +14,15 @@ var FavouriteSchema = new Schema({
     }
 });
 
+FavouriteSchema.post('save', function (doc) {
+    var audit = {
+        user: doc.user,
+        project: doc.project,
+        type: 'FAVOURITE',
+        favId: doc._id
+    }
+    AuditSchema.create(audit)
+})
+
+
 module.exports = mongoose.model('Favourite', FavouriteSchema);
