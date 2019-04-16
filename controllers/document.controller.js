@@ -61,21 +61,12 @@ exports.uploadFile = function (req, resp) {
                             documentSchema.location = fileUploadPath;
                             documentSchema.uploadedBy = JSON.parse(req.query.uploadedBy);
                             documentSchema.uploadedDate = new Date();
-
-                            convertToImage(path.extname(documentSchema.documentName), path.resolve(documentSchema.location, documentSchema.documentName), function (err, imagePaths) {
-                                documentSchema.imagePaths = _.map(imagePaths, function (imagePath) {
-                                    return {
-                                        location: imagePath,
-                                        destination: fileVirtualPath + "/" + documentId + "/" + path.basename(imagePath)
-                                    }
-                                });
                                 documentSchema.save(function (err) {
                                     if (err) {
                                         resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
                                     } else {
                                         updateProjectLabelInfo(req, resp, documentSchema, req.query.projectId, documentSchema._id, (oldDocuments[documentSchema.documentName] === undefined));
                                     }
-                                });
                             })
                         }
                     })
@@ -89,7 +80,7 @@ exports.uploadFile = function (req, resp) {
         console.log(e);
     }
 };
-
+/* 
 function convertToImage(ext, path, callback) {
     if (ext === '.pdf') {
         convert.convertPdfToImage(path, callback)
@@ -98,7 +89,7 @@ function convertToImage(ext, path, callback) {
     } else {
         callback(null, [])
     }
-}
+} */
 
 
 function checkForOldDocuments(files, reqQuery, callback) {
