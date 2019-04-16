@@ -14,7 +14,14 @@ _id:{
     actionType:{
         type:String
     },
-    description:{}
+    description:{
+        _id:{
+            type:Schema.Types.ObjectId,
+            required:true
+        },
+        documentName: String,
+        fileType:String
+    }
 },{
     timestamps:true
 });
