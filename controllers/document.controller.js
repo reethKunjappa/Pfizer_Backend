@@ -93,11 +93,17 @@ exports.reUploadFile = function (req, resp) {
                 destination: fileVirtualPath + "/" + documentId + "/" + path.basename(pdfPath)
             }
             result.document = new DocumentSchema(result.document);
+
+            //soft delete old file
             result.oldDoc._deleted = true;
+
+            //pull the old document id from projects
             var index = _.find(result.project.documents, { documentId: result.oldDoc.documentId });
             if (index >= 0) {
                 result.project.documents = result.project.documents.splice(index, 1);
             }
+
+            //push new document id
             result.project.documents.push(result.document._id);
 
             return Promise.props({
