@@ -92,7 +92,7 @@ function convertToImage(ext, fPath, callback) {
     if (ext === '.pdf') {
         callback(null, fPath)
     } else if (ext === '.docx') {
-        convertDocToPdf("C:\\Users\\Reeth\\projects\\Pfizer_Backend\\fs\\2a39241a-b37b-42b8-a374-4b4d7298b163\\Profiles_ADD.docx")
+        convertDocToPdf(fPath)
             .then(function () {
                 fPath = fPath.replace(path.extname(fPath), '.pdf')
                 callback(null, fPath)

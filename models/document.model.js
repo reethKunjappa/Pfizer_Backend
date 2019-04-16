@@ -12,6 +12,7 @@ var DocumentSchema = new Schema({
         required: true,
         unique: true
     },
+    pdfPath: {},
     mimetype: {
         type: String
     },
