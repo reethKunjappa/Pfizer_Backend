@@ -4,8 +4,8 @@ const { ProductLabel, DocumentSchema } = require('../models/model');
 var FavouriteSchema = require('../models/favourite.model');
 var Audit = require('../models/audit.model');
 const { responseGenerator } = require('../utility/commonUtils');
-var { mkdir } = require('../utility/commonUtils');
-var http = require('http');
+var { mkdir, convertDocToPdf } = require('../utility/commonUtils');
+var Promise = require('bluebird');
 var path = require('path');
 var rp = require('request-promise');
 var fs = require('fs');
@@ -173,7 +173,7 @@ exports.compare = function (req, res) {
             return project.save();
         }).then(function (projectObj) {
             return Promise.props({
-                pdf: utility.convertDocToPdf(cfilePath),
+                pdf: convertDocToPdf(cfilePath),
                 project: projectObj,
                 label: DocumentSchema.findById(conflictDoc._id)
             });
