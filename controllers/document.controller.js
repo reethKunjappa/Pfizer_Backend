@@ -157,7 +157,7 @@ function updateProjectLabelInfo(req, resp, document, projectId, newDocId, isNew)
                         }
                     } */
                     var audit = {
-                        user: request.uploadedBy,
+                        user: request.createdBy,
                         description: document,
                         project:request,
                         actionType: 'DOCUMENT_UPLOAD',
