@@ -1,6 +1,5 @@
 'use strict';
 const docxConverter = require('docx-pdf');
-var PDFImage = require("pdf-image").PDFImage;
 var path = require('path');
 var fs = require('fs');
 function convertDocToImage(inputPath, callback) {
@@ -9,7 +8,6 @@ function convertDocToImage(inputPath, callback) {
     var ext = path.extname(filename);
 
     var bufferPath = path.resolve(dir, Date.now() + '.pdf')
-    console.log("TCL: convertToImage -> bufferPath", bufferPath)
 
     docxConverter(inputPath, bufferPath, (err, result) => {
         if (err) callback(err);

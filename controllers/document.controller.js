@@ -3,7 +3,7 @@ var mongoose = require("mongoose");
 var { DocumentSchema, ProductLabel } = require("../models/model");
 const { responseGenerator } = require('../utility/commonUtils');
 const appConfig = require('../config/appConfig');
-var { mkdir, deleteFolder } = require('../utility/commonUtils');
+var { mkdir, deleteFolder, convertDocToPdf } = require('../utility/commonUtils');
 var uuid = require('uuid-v4');
 var _ = require('lodash');
 var path = require('path');
@@ -61,12 +61,18 @@ exports.uploadFile = function (req, resp) {
                             documentSchema.location = fileUploadPath;
                             documentSchema.uploadedBy = JSON.parse(req.query.uploadedBy);
                             documentSchema.uploadedDate = new Date();
+                            convertToImage(path.extname(documentSchema.documentName), path.resolve(documentSchema.location, documentSchema.documentName), function (err, pdfPath) {
+                                documentSchema.pdfPath = {
+                                    location: pdfPath,
+                                    destination: fileVirtualPath + "/" + documentId + "/" + path.basename(pdfPath)
+                                };
                                 documentSchema.save(function (err) {
                                     if (err) {
                                         resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
                                     } else {
                                         updateProjectLabelInfo(req, resp, documentSchema, req.query.projectId, documentSchema._id, (oldDocuments[documentSchema.documentName] === undefined));
                                     }
+                                })
                             })
                         }
                     })
@@ -80,16 +86,22 @@ exports.uploadFile = function (req, resp) {
         console.log(e);
     }
 };
-/* 
-function convertToImage(ext, path, callback) {
+
+function convertToImage(ext, fPath, callback) {
     if (ext === '.pdf') {
-        convert.convertPdfToImage(path, callback)
+        callback(null, fPath)
     } else if (ext === '.docx') {
-        convert.convertDocToImage(path, callback)
+        convertDocToPdf("C:\\Users\\Reeth\\projects\\Pfizer_Backend\\fs\\2a39241a-b37b-42b8-a374-4b4d7298b163\\Profiles_ADD.docx")
+            .then(function () {
+                fPath = fPath.replace(path.extname(fPath), '.pdf')
+                callback(null, fPath)
+            }).catch(function (err) {
+                callback(err);
+            })
     } else {
-        callback(null, [])
+        callback(null, {})
     }
-} */
+}
 
 
 function checkForOldDocuments(files, reqQuery, callback) {
