@@ -2,28 +2,21 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var AuditSchema = new Schema({
-   user:{},
-   project: {
-_id:{
-           type: Schema.Types.ObjectId,
-           required: true,
-           ref: 'ProductLabel'
-    },
-        projectName:String
-    },
-    actionType:{
-        type:String
-    },
-    description:{
-        _id:{
-            type:Schema.Types.ObjectId,
-            required:true
+    user: {},
+    project: {
+        _id: {
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: 'ProductLabel'
         },
-        documentName: String,
-        fileType:String
-    }
-},{
-    timestamps:true
-});
+        projectName: String
+    },
+    actionType: {
+        type: String
+    },
+    description: {}
+}, {
+        timestamps: true
+    });
 
 module.exports = mongoose.model('Audit', AuditSchema);

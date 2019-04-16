@@ -40,7 +40,7 @@ exports.newProject = function (req, res) {
     productLabel.save(function (err) {
         if (err)
             res.json(responseGenerator(-1, "Project already exists.", err));
-        else{
+        else {
             res.json(responseGenerator(0, "Successfully created Project", productLabel));
             //create audit for new project
             var audit = {
@@ -187,7 +187,16 @@ exports.compare = function (req, res) {
                 return ProductLabel.findById(result.project._id).populate('documents')
             })
         }).then(function (project) {
-            return res.send(responseGenerator(1, 'Compared', project));
+            res.send(responseGenerator(1, 'Compared', project));
+            var audit = {
+                user: project.createdBy,
+                project: project._id,
+                actionType: "COMPARE_DOCUMENT",
+                description: {
+                    documents: project.documents
+                }
+            };
+            return Audit.create(audit);
         }).catch(function (err) {
             console.log(err);
             return res.status(400).send({ success: false, err: err.message });
