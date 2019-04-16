@@ -159,6 +159,7 @@ function updateProjectLabelInfo(req, resp, document, projectId, newDocId, isNew)
                     var audit = {
                         user: productLabel.uploadedBy,
                         description: document,
+                        project:request,
                         actionType: 'DOCUMENT_UPLOAD',
                     }
                     return Audit.create(audit);
