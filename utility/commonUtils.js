@@ -1,6 +1,10 @@
 var mkdirp = require('mkdirp');
 const { getModel } = require('../models/model');
 var rimraf = require('rimraf');
+
+
+var pythonConvertAPI = "http://34.204.2.145:4000/";
+
 exports.generateId = function (preceed, model) {
     return new Promise(function (resolve, reject) {
         let uniqueId = preceed;
@@ -15,6 +19,20 @@ exports.generateId = function (preceed, model) {
         });
     });
 };
+
+exports.convertDocToPdf = function (path) {
+    var rp = require('request-promise');
+    var options = {
+        method: 'POST',
+        uri: pythonConvertAPI,
+        body: {
+            file_path: path
+        },
+        json: true // Automatically stringifies the body to JSON
+    };
+
+    return rp(options);
+}
 
 exports.getCount = function (model, condition) {
     return new Promise(function (resolve, reject) {
