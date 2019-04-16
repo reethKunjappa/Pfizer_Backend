@@ -13,7 +13,7 @@ const appConfig = require('../config/appConfig');
 var _ = require('lodash');
 require('mongoose').set('debug', true);
 
-var convert = require('./../utility/convert').convertDocToImage;
+var utility = require('./../utility/convert');
 
 
 exports.newProject = function (req, res) {
@@ -25,7 +25,7 @@ exports.newProject = function (req, res) {
             content: 0,
             order: 0,
         },
-        comments:[]
+        comments: []
     };
     productLabel.projectName = req.body.projectName;
     productLabel.country = req.body.country;
@@ -81,7 +81,7 @@ exports.compare = function (req, res) {
     };
     var fileUploadPath = appConfig["FS_PATH"];
     var fileVirtualPath = appConfig["DOCUMENT_VIEW_PATH"];
-    var cfilePath;
+    var cfilePath, cVpath;
     return ProductLabel.findOne({ _id: req.body._id }).populate('documents')
         .then(function (_project) {
             project = _project;
@@ -94,8 +94,7 @@ exports.compare = function (req, res) {
                     "previousLabel_filepath": [],
                     "fontFormat_filepath": [],
                     "reference_filepath": [],
-                    // "country_name": project.country.name
-                    "country_name": "Saudi Arabia"
+                    "country_name": project.country.name
                 };
                 var basePath = path.resolve('./');
 
@@ -110,6 +109,7 @@ exports.compare = function (req, res) {
                             // conflictDoc.fileType = 'CONFLICT';
                             // conflictDoc.destination = fileVirtualPath + "/" + id + '/' + element.documentName;
                             // conflictDoc.location = fileUploadPath + '/' + id;
+                            cVpath = conflictDoc.destination;
                             payload.label_filepath = path.resolve('./', conflictDoc.location, conflictDoc.documentName);
                             break;
                         case 'Reference':
@@ -163,9 +163,22 @@ exports.compare = function (req, res) {
             });
             return project.save();
         }).then(function (projectObj) {
-            convert(cfilePath, function (imagePaths) {
-                return res.send(responseGenerator(1, "Compared document", projectObj));
+            return Promise.props({
+                pdf: utility.convertDocToPdf(cfilePath),
+                project: projectObj,
+                label: DocumentSchema.findById(conflictDoc._id)
+            });
+        }).then(function (result) {
+            var cpath = cfilePath.replace(path.extname(cfilePath), ".pdf");
+            result.label.pdfPath = {
+                location: cpath,
+                destination: cVpath.replace(path.extname(cVpath), ".pdf")
+            }
+            return result.label.save().then(function () {
+                return ProductLabel.findById(result.project._id).populate('documents')
             })
+        }).then(function (project) {
+            return res.send(responseGenerator(1, 'Compared', project));
         }).catch(function (err) {
             console.log(err);
             return res.status(400).send({ success: false, err: err.message });
@@ -189,7 +202,7 @@ exports.updateProject = function (req, res) {
 };
 
 function getUserFav(req, res, projects) {
-  
+
     try {
         FavouriteSchema.find({ 'user.userId': req.body.user.userId }).lean().exec(function (err, userFavprojects) {
             if (err)
@@ -197,11 +210,11 @@ function getUserFav(req, res, projects) {
             else {
                 var userFav = _.groupBy(userFavprojects, 'project');
                 projects.forEach(function (key) {
-                     if (userFav[key._id]) {
+                    if (userFav[key._id]) {
                         key.favorite = true
                     } else {
                         key.favorite = false;
-                    } 
+                    }
                     return key;
                 })
                 res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
@@ -228,13 +241,13 @@ exports.viewConflictProject = function (req, res) {
 
 exports.commentAck = function (req, res) {
 
-   /*  ProductLabel.findById(req.body.objectId, function (err, project) {
+    /*  ProductLabel.findById(req.body.objectId, function (err, project) {
+ 
+         if (err) return res.json(responseGenerator(-1, "Unable to fetch the Project details", err))
+         else{
+             res.json(responseGenerator(0, "Successfully retrieved Project details", project, 0));
+         }
+     } );  */
 
-        if (err) return res.json(responseGenerator(-1, "Unable to fetch the Project details", err))
-        else{
-            res.json(responseGenerator(0, "Successfully retrieved Project details", project, 0));
-        }
-    } );  */
-    
 
-    };
+};
