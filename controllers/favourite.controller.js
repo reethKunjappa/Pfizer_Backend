@@ -1,5 +1,6 @@
 'use strict';
 var Favourite = require('../models/favourite.model');
+var Audit = require('../models/audit.model');
 var _ = require('lodash');
 const { responseGenerator } = require('../utility/commonUtils');
 
@@ -56,9 +57,17 @@ module.exports.update = function (req, res, next) {
 
 module.exports.delete = function (req, res, next) {
     var query = req.body;
-    return Favourite.findOneAndDelete(query)
+    return Favourite.findOneAndDelete(query).populate('project')
         .then(function (result) {
-            return res.send({ result, status: { code: 0, message: "UnMarked Favourite" } });
+            var _project = result.project;
+            result.project = _project._id;
+             res.send({ result, status: { code: 0, message: "UnMarked Favourite" } });
+            var audit = {
+                user: result.user,
+                project: _project,
+                actionType: 'UNFAVOURITE',
+            }
+            return Audit.create(audit);
         }).catch(function (err) {
             console.error(err);
             return res.status(400).send({ success: false, err: err.message });

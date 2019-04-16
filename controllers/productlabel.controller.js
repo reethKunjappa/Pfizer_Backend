@@ -2,6 +2,7 @@ var jwt = require('jsonwebtoken');
 var config = require('../config/database');
 const { ProductLabel, DocumentSchema } = require('../models/model');
 var FavouriteSchema = require('../models/favourite.model');
+var Audit = require('../models/audit.model');
 const { responseGenerator } = require('../utility/commonUtils');
 var { mkdir } = require('../utility/commonUtils');
 var http = require('http');
@@ -39,8 +40,16 @@ exports.newProject = function (req, res) {
     productLabel.save(function (err) {
         if (err)
             res.json(responseGenerator(-1, "Project already exists.", err));
-        else
+        else{
             res.json(responseGenerator(0, "Successfully created Project", productLabel));
+            //create audit for new project
+            var audit = {
+                user: productLabel.createdBy,
+                project: productLabel,
+                actionType: 'PROJECT_CREATE',
+            }
+            return Audit.create(audit);
+        }
     });
 }
 
