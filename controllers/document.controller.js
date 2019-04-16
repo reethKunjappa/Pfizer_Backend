@@ -24,6 +24,102 @@ var storage = multer.diskStorage({
 });
 var upload = multer({ storage: storage }).any();
 
+function uploadFile(req, res, fileUploadPath) {
+    return new Promise(function (resolve, reject) {
+        var storage = multer.diskStorage({
+            destination: (req, file, cb) => {
+                cb(null, fileUploadPath)
+            },
+            filename: (req, file, cb) => {
+                fileName = file.originalname;
+                cb(null, file.originalname)
+            }
+        });
+        var reupload = multer({ storage: storage }).any();
+        reupload(req, res, function (err) {
+            if (err) {
+                return reject(err);
+            } else {
+                resolve(req.files);
+            }
+        })
+    })
+}
+
+function convertToImagePromise(ext, path, callback) {
+    return new Promise(function (resolve, reject) {
+        convertToImage(ext, path, function (err, pdfPath) {
+            if (err) { return reject(err) }
+            else { resolve(pdfPath) }
+        });
+    });
+}
+exports.reUploadFile = function (req, resp) {
+    fileUploadPath = appConfig["FS_PATH"];
+    fileVirtualPath = appConfig["DOCUMENT_VIEW_PATH"];
+
+    function createUUID() {
+        return documentId = uuid();
+    }
+    var id = createUUID();
+    fileUploadPath = fileUploadPath + "/" + id;
+    mkdir(fileUploadPath);
+
+    uploadFile(req, res, fileUploadPath)
+        .then(function (files) {
+            var file = req.files[0];
+            var document = {
+                documentId: id,
+                documentName: file.originalname,
+                mimetype: file.mimetype,
+                destination: fileVirtualPath + "/" + documentId + "/" + file.originalname,
+                documentid: documentId,
+                projectId: req.query.projectId,
+                fileType: req.query.fileType,
+                version: "0.1",
+                location: fileUploadPath,
+                uploadedBy: JSON.parse(req.query.uploadedBy),
+                uploadedDate: new Date(),
+            }
+            return Promise.props({
+                pdfPath: convertToImagePromise(path.extname(documentSchema.documentName), path.resolve(documentSchema.location, documentSchema.documentName)),
+                document: document,
+                oldDoc: DocumentSchema.findById(req.query.documentId),
+                project: ProductLabel.findById(req.query.projectId)
+            });
+        }).then(function (result) {
+            result.document.pdfPath = {
+                location: pdfPath,
+                destination: fileVirtualPath + "/" + documentId + "/" + path.basename(pdfPath)
+            }
+            result.document = new DocumentSchema(result.document);
+            result.oldDoc._deleted = true;
+            var index = _.find(result.project.documents, { documentId: result.oldDoc.documentId });
+            if (index >= 0) {
+                result.project.documents = result.project.documents.splice(index, 1);
+            }
+            result.project.documents.push(result.document._id);
+
+            return Promise.props({
+                document: result.document.save(),
+                oldDoc: result.oldDoc.save(),
+                project: result.project.save()
+            });
+        }).then(function (result) {
+            resp.json(responseGenerator(0, "Successfully Uploaded", result.document));
+            var audit = {
+                user: result.project.createdBy,
+                description: result.document,
+                project: result.project,
+                actionType: 'DOCUMENT_REUPLOAD',
+            }
+            return Audit.create(audit);
+        }).catch(function (err) {
+            console.log(err);
+            resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
+        });
+};
+
 exports.uploadFile = function (req, resp) {
     try {
         fileUploadPath = appConfig["FS_PATH"];
@@ -159,7 +255,7 @@ function updateProjectLabelInfo(req, resp, document, projectId, newDocId, isNew)
                     var audit = {
                         user: request.createdBy,
                         description: document,
-                        project:request,
+                        project: request,
                         actionType: 'DOCUMENT_UPLOAD',
                     }
                     return Audit.create(audit);
