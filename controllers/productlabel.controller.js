@@ -106,7 +106,7 @@ exports.compare = function (req, res) {
                     "country_name": project.country.name
                 };
                 var basePath = path.resolve('./');
-
+                payload.file_id = project._id;
                 project.documents.forEach(element => {
                     var filePath = path.resolve(basePath, element.location, element.documentName);
                     switch (element.fileType) {
