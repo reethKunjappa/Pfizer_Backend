@@ -98,7 +98,7 @@ exports.reUploadFile = function (req, resp) {
             result.oldDoc._deleted = true;
 
             //pull the old document id from projects
-            var index = _.find(result.project.documents, { documentId: result.oldDoc.documentId });
+            var index = _.findIndex(result.project.documents, { documentId: result.oldDoc.documentId });
             if (index >= 0) {
                 result.project.documents = result.project.documents.splice(index, 1);
             }
