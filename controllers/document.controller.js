@@ -91,7 +91,7 @@ exports.uploadFile = function (req, resp) {
 function convertToImage(ext, fPath, callback) {
     if (ext === '.pdf') {
         callback(null, fPath)
-    } else if (ext === '.docx') {
+    } else if (['.docx', '.doc'].indexOf(ext) >= 0) {
         convertDocToPdf(fPath)
             .then(function () {
                 fPath = fPath.replace(path.extname(fPath), '.pdf')
