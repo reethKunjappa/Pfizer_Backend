@@ -248,16 +248,7 @@ function updateProjectLabelInfo(req, resp, document, projectId, newDocId, isNew)
                     resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data with Project data", ""));
                 } else {
                     resp.json(responseGenerator(0, "Successfully Uploaded", document));
-
                     //create audit for upload doc
-                    /*  {
-                        user: { },
-                        project: '7662347823648',
-                            actionType: 'DOCUMENT_UPLOAD',
-                                description: {
-                            "documentId": "asdasds"
-                        }
-                    } */
                     var audit = {
                         user: request.createdBy,
                         description: document,

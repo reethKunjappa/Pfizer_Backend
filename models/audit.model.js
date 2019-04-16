@@ -14,9 +14,23 @@ var AuditSchema = new Schema({
     actionType: {
         type: String
     },
+<<<<<<< Updated upstream
     description: {}
 }, {
         timestamps: true
     });
+=======
+    description:{
+        _id:{
+            type:Schema.Types.ObjectId,
+        },
+        documentName: String,
+        fileType:String
+    },
+    comments:{},
+},{
+    timestamps:true
+});
+>>>>>>> Stashed changes
 
 module.exports = mongoose.model('Audit', AuditSchema);

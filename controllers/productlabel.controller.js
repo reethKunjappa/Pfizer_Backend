@@ -257,15 +257,43 @@ exports.viewConflictProject = function (req, res) {
     }
 };
 
-exports.commentAck = function (req, res) {
-
-    /*  ProductLabel.findById(req.body.objectId, function (err, project) {
- 
-         if (err) return res.json(responseGenerator(-1, "Unable to fetch the Project details", err))
-         else{
-             res.json(responseGenerator(0, "Successfully retrieved Project details", project, 0));
-         }
-     } );  */
-
-
+exports.commentAck = function(req, res) {
+  ProductLabel.findById(req.body.projectId, function(err, project) {
+    if (err)
+      return res.json(
+        responseGenerator(-1, "Unable to fetch the Project details", err)
+      );
+    else {
+      var userProject = _.groupBy(req.body.comments, "_id");
+      project.conflicts.comments.forEach(function(comment) {
+        if (userProject[comment._id]) {
+          comment.action = userProject[comment._id][0].action;
+          comment.actionOn = Date.now();
+          comment.actionBy = req.body.user;
+        }
+        return comment;
+      });
+      project.save(function(err) {
+        if (err)
+          return res.status(400).send({ success: false, err: err.message });
+        else {
+          var audit = {
+            user: req.body.user,
+            project: project,
+            comments: req.body.comments,
+            actionType: "PROJECT_COMMENTS_ACK"
+          };
+          return Audit.create(audit);
+        }
+      });
+    }
+    return res.json(
+      responseGenerator(
+        0,
+        "Successfully updated comments Ack",
+        req.body.comments,
+        0
+      )
+    );
+  });
 };
