@@ -2,24 +2,18 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var AuditSchema = new Schema({
-    user: {},
-    project: {
-        _id: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            ref: 'ProductLabel'
-        },
-        projectName: String
+   user:{},
+   project: {
+_id:{
+           type: Schema.Types.ObjectId,
+           required: true,
+           ref: 'ProductLabel'
     },
-    actionType: {
-        type: String
+        projectName:String
     },
-<<<<<<< Updated upstream
-    description: {}
-}, {
-        timestamps: true
-    });
-=======
+    actionType:{
+        type:String
+    },
     description:{
         _id:{
             type:Schema.Types.ObjectId,
@@ -31,6 +25,5 @@ var AuditSchema = new Schema({
 },{
     timestamps:true
 });
->>>>>>> Stashed changes
 
 module.exports = mongoose.model('Audit', AuditSchema);
