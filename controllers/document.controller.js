@@ -1,6 +1,7 @@
 var mongoose = require("mongoose");
 //mongoose.set('debug', true);
 var { DocumentSchema, ProductLabel } = require("../models/model");
+var Audit = require('../models/audit.model');
 const { responseGenerator } = require('../utility/commonUtils');
 const appConfig = require('../config/appConfig');
 var { mkdir, deleteFolder, convertDocToPdf } = require('../utility/commonUtils');
