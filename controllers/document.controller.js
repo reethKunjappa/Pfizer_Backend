@@ -287,6 +287,6 @@ exports.deleteFile = function (req, res, next) {
         return res.send(responseGenerator(0, 'Document deleted', req.body))
     }).catch(function (err) {
         console.log(err);
-        resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
+        res.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
     });
 }
