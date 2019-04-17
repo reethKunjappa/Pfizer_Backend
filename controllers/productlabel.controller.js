@@ -91,10 +91,10 @@ exports.compare = function (req, res) {
     var fileUploadPath = appConfig["FS_PATH"];
     var fileVirtualPath = appConfig["DOCUMENT_VIEW_PATH"];
     var cfilePath, cVpath;
+    var coreDoc;
     return ProductLabel.findOne({ _id: req.body._id }).populate('documents')
         .then(function (_project) {
             project = _project;
-            var coreDoc;
             if (project && project.documents != null && project.documents.length > 0) {
                 var payload = {
                     "label_filepath": "",
@@ -113,11 +113,11 @@ exports.compare = function (req, res) {
                         case 'Label':
                             coreDoc = element;
                             conflictDoc = _.cloneDeep(coreDoc);
-                            // var id = uuid();
-                            // conflictDoc.documentId = id;
-                            // conflictDoc.fileType = 'CONFLICT';
-                            // conflictDoc.destination = fileVirtualPath + "/" + id + '/' + element.documentName;
-                            // conflictDoc.location = fileUploadPath + '/' + id;
+                            var id = uuid();
+                            conflictDoc.documentId = id;
+                            conflictDoc.fileType = 'CONFLICT';
+                            conflictDoc.destination = fileVirtualPath + "/" + id + '/' + element.documentName;
+                            conflictDoc.location = fileUploadPath + '/' + id;
                             cVpath = conflictDoc.destination;
                             payload.label_filepath = path.resolve('./', conflictDoc.location, conflictDoc.documentName);
                             break;
@@ -149,6 +149,15 @@ exports.compare = function (req, res) {
                     }
                 }
 
+                //create a copy of the label file
+                var srcPath = path.resolve('./', coreDoc.location, coreDoc.documentName);
+                var destPath = path.resolve('./', conflictDoc.location, conflictDoc.documentName);
+                if (!fs.existsSync(destPath.replace(conflictDoc.documentName))) {
+                    fs.mkdirSync(destPath.replace(conflictDoc.documentName, ""));
+                }
+                fs.copyFileSync(srcPath, destPath);
+
+
                 return rp(options);
             } else {
                 throw new Error();
@@ -175,7 +184,7 @@ exports.compare = function (req, res) {
             return Promise.props({
                 pdf: convertDocToPdf(cfilePath),
                 project: projectObj,
-                label: DocumentSchema.findById(conflictDoc._id)
+                label: DocumentSchema.findById(coreDoc._id)
             });
         }).then(function (result) {
             var cpath = cfilePath.replace(path.extname(cfilePath), ".pdf");
@@ -257,43 +266,43 @@ exports.viewConflictProject = function (req, res) {
     }
 };
 
-exports.commentAck = function(req, res) {
-  ProductLabel.findById(req.body.projectId, function(err, project) {
-    if (err)
-      return res.json(
-        responseGenerator(-1, "Unable to fetch the Project details", err)
-      );
-    else {
-      var userProject = _.groupBy(req.body.comments, "_id");
-      project.conflicts.comments.forEach(function(comment) {
-        if (userProject[comment._id]) {
-          comment.action = userProject[comment._id][0].action;
-          comment.actionOn = Date.now();
-          comment.actionBy = req.body.user;
-        }
-        return comment;
-      });
-      project.save(function(err) {
+exports.commentAck = function (req, res) {
+    ProductLabel.findById(req.body.projectId, function (err, project) {
         if (err)
-          return res.status(400).send({ success: false, err: err.message });
+            return res.json(
+                responseGenerator(-1, "Unable to fetch the Project details", err)
+            );
         else {
-          var audit = {
-            user: req.body.user,
-            project: project,
-            comments: req.body.comments,
-            actionType: "PROJECT_COMMENTS_ACK"
-          };
-          return Audit.create(audit);
+            var userProject = _.groupBy(req.body.comments, "_id");
+            project.conflicts.comments.forEach(function (comment) {
+                if (userProject[comment._id]) {
+                    comment.action = userProject[comment._id][0].action;
+                    comment.actionOn = Date.now();
+                    comment.actionBy = req.body.user;
+                }
+                return comment;
+            });
+            project.save(function (err) {
+                if (err)
+                    return res.status(400).send({ success: false, err: err.message });
+                else {
+                    var audit = {
+                        user: req.body.user,
+                        project: project,
+                        comments: req.body.comments,
+                        actionType: "PROJECT_COMMENTS_ACK"
+                    };
+                    return Audit.create(audit);
+                }
+            });
         }
-      });
-    }
-    return res.json(
-      responseGenerator(
-        0,
-        "Successfully updated comments Ack",
-        req.body.comments,
-        0
-      )
-    );
-  });
+        return res.json(
+            responseGenerator(
+                0,
+                "Successfully updated comments Ack",
+                req.body.comments,
+                0
+            )
+        );
+    });
 };
