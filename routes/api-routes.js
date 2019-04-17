@@ -44,6 +44,8 @@ router.post('/labelling/createComments', commentsController.createComments);
 router.post('/labelling/updateComments', commentsController.updateComments);
 //router.post('/deleteComments', commentsController.deleteComments);
 router.post('/labelling/getAllComments', commentsController.getAllComments);
+//Audit/History
+router.post("/labelling/auditHistory", documentController.auditHistory);
 
 
 // Verify JWT Jokens from REST

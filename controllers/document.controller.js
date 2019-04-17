@@ -293,3 +293,25 @@ exports.deleteFile = function (req, res, next) {
         res.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
     });
 }
+exports.auditHistory = function(req, res) {
+  try {
+    //   req.body.project._id = mongoose.Types.ObjectId(req.body.project._id)
+    Audit.find(req.body).exec(function(err, audit) {
+      if (err)
+        res.json(
+          responseGenerator(-1, "Unable to retrieve Projects list", err)
+        );
+      else
+        res.json(
+          responseGenerator(
+            0,
+            "Successfully retrieved Audit/Hostory !",
+            audit,
+            ""
+          )
+        );
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
