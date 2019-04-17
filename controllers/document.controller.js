@@ -117,7 +117,10 @@ exports.reUploadFile = function (req, resp) {
             resp.json(responseGenerator(0, "Successfully Uploaded", result.document));
             var audit = {
                 user: result.project.createdBy,
-                description: result.document,
+                description: {
+                    oldDoc: result.oldDoc,
+                    newDoc: result.document
+                },
                 project: result.project,
                 actionType: 'DOCUMENT_REUPLOAD',
             }
