@@ -65,7 +65,7 @@ exports.reUploadFile = function (req, resp) {
     fileUploadPath = fileUploadPath + "/" + id;
     mkdir(fileUploadPath);
 
-    uploadFile(req, res, fileUploadPath)
+    uploadFile(req, resp, fileUploadPath)
         .then(function (files) {
             var file = req.files[0];
             var document = {
