@@ -9,6 +9,7 @@ var uuid = require('uuid-v4');
 var _ = require('lodash');
 var path = require('path');
 var fileUploadPath = "";
+var Promise = require('bluebird');
 var fileName = "";
 var multer = require('multer');
 var convert = require('./../utility/convert');
@@ -82,12 +83,13 @@ exports.reUploadFile = function (req, resp) {
                 uploadedDate: new Date(),
             }
             return Promise.props({
-                pdfPath: convertToImagePromise(path.extname(documentSchema.documentName), path.resolve(documentSchema.location, documentSchema.documentName)),
+                pdfPath: convertToImagePromise(path.extname(document.documentName), path.resolve(document.location, document.documentName)),
                 document: document,
                 oldDoc: DocumentSchema.findById(req.query.documentId),
                 project: ProductLabel.findById(req.query.projectId)
             });
         }).then(function (result) {
+            var pdfPath = result.pdfPath;
             result.document.pdfPath = {
                 location: pdfPath,
                 destination: fileVirtualPath + "/" + documentId + "/" + path.basename(pdfPath)
@@ -98,9 +100,9 @@ exports.reUploadFile = function (req, resp) {
             result.oldDoc._deleted = true;
 
             //pull the old document id from projects
-            var index = _.findIndex(result.project.documents, { documentId: result.oldDoc.documentId });
+            var index = _.findIndex(result.project.documents, (doc) => { return doc._id.toString() === result.oldDoc._id.toString() })
             if (index >= 0) {
-                result.project.documents = result.project.documents.splice(index, 1);
+                result.project.documents.splice(index, 1);
             }
 
             //push new document id
