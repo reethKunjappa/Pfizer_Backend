@@ -263,3 +263,30 @@ function updateProjectLabelInfo(req, resp, document, projectId, newDocId, isNew)
         }
     });
 }
+
+
+exports.deleteFile = function (req, res, next) {
+
+    return Promise.props({
+        project: ProductLabel.findById(req.body.projectId),
+        document: DocumentSchema.findById(req.body.documentId)
+    }).then(function (result) {
+        //pull the old document id from projects
+        var index = _.findIndex(result.project.documents, (doc) => { return doc._id.toString() === result.document._id.toString() })
+        if (index >= 0) {
+            result.project.documents.splice(index, 1);
+        }
+
+        result.document._deleted = true;
+
+        return Promise.props({
+            document: result.document.save(),
+            project: result.project.save()
+        })
+    }).then(function (result) {
+        return res.send(responseGenerator(0, 'Document deleted', req.body))
+    }).catch(function (err) {
+        console.log(err);
+        resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
+    });
+}

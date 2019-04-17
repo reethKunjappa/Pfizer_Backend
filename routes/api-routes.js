@@ -29,6 +29,7 @@ router.route('/labelling/commentAck').post(productlabelController.commentAck);
 // File Upload
 router.route('/labelling/upload').post(documentController.uploadFile);
 router.route('/labelling/re-upload').post(documentController.reUploadFile);
+router.route('/labelling/deleteDocument').post(documentController.deleteFile);
 
 // File Upload
 router.route('/labelling/getAllProjects').post(dashboardController.getAllProjects);
