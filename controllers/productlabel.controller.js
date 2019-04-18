@@ -177,10 +177,7 @@ exports.compare = function (req, res) {
                 };
 
                 //create a copy of the label file
-                var srcPath = path.resolve(
-                    "./",
-                    coreDoc.location,
-                    coreDoc.documentName
+                var srcPath = path.resolve("./", coreDoc.location, coreDoc.documentName
                 );
                 var destPath = path.resolve(
                     "./",
@@ -207,6 +204,7 @@ exports.compare = function (req, res) {
                 project.conflicts.types,
                 result.conflicts.conflict_type
             );
+            project.conflicted = true;
             project.conflicts.comments = _.map(result.comments, function (comment) {
                 return _.mapKeys(comment, function (value, key) {
                     switch (key) {

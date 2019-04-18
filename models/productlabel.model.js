@@ -37,6 +37,10 @@ var ProductLabelSchema = new Schema({
   createdOn: {
     type: Date
   },
+  conflicted: {
+    type: Boolean,
+    default: false
+  },
   conflicts: {
     total: {
       type: Number,

@@ -104,6 +104,7 @@ exports.reUploadFile = function (req, resp) {
             if (index >= 0) {
                 result.project.documents.splice(index, 1);
             }
+            result.project.conflicted = false;
 
             //push new document id
             result.project.documents.push(result.document._id);
@@ -245,6 +246,7 @@ function updateProjectLabelInfo(req, resp, document, projectId, newDocId, isNew)
             if (isNew) {
                 project.documents.push(newDocId);
             }
+            productLabel.conflicted = false;
             productLabel.documents = project.documents;
             ProductLabel.findByIdAndUpdate(projectId, { $set: productLabel }, {
                 new: false
@@ -279,7 +281,7 @@ exports.deleteFile = function (req, res, next) {
         if (index >= 0) {
             result.project.documents.splice(index, 1);
         }
-
+        result.project.conflicted = false;
         result.document._deleted = true;
 
         return Promise.props({
@@ -293,25 +295,25 @@ exports.deleteFile = function (req, res, next) {
         res.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
     });
 }
-exports.auditHistory = function(req, res) {
-  try {
-    //   req.body.project._id = mongoose.Types.ObjectId(req.body.project._id)
-    Audit.find(req.body).exec(function(err, audit) {
-      if (err)
-        res.json(
-          responseGenerator(-1, "Unable to retrieve Projects list", err)
-        );
-      else
-        res.json(
-          responseGenerator(
-            0,
-            "Successfully retrieved Audit/Hostory !",
-            audit,
-            ""
-          )
-        );
-    });
-  } catch (e) {
-    console.log(e);
-  }
+exports.auditHistory = function (req, res) {
+    try {
+        //   req.body.project._id = mongoose.Types.ObjectId(req.body.project._id)
+        Audit.find(req.body).exec(function (err, audit) {
+            if (err)
+                res.json(
+                    responseGenerator(-1, "Unable to retrieve Projects list", err)
+                );
+            else
+                res.json(
+                    responseGenerator(
+                        0,
+                        "Successfully retrieved Audit/Hostory !",
+                        audit,
+                        ""
+                    )
+                );
+        });
+    } catch (e) {
+        console.log(e);
+    }
 };
