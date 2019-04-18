@@ -1,24 +1,7 @@
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 var { DocumentSchema } = require("../models/document.model");
-
-var CommentSchema = new Schema({
-  text: {
-    type: String,
-  },
-  type: {
-    type: String,
-  },
-  referenceDoc: String,
-  action: {
-    type: String,
-    enum: ['ACCEPT', 'REJECT']
-  },
-  actionBy: {},
-  actionOn: {
-    type: Date
-  }
-});
+var ConflictCommentSchema = require("../models/conflict.model");
 
 var ProductLabelSchema = new Schema({
   projectName: {
@@ -64,7 +47,7 @@ var ProductLabelSchema = new Schema({
         default: 0
       },
     },
-    comments: [CommentSchema]
+    comments: [{ type: mongoose.Schema.ObjectId, ref: ConflictCommentSchema }]
   },
   documents: [{ type: mongoose.Schema.ObjectId, ref: DocumentSchema }]
 }, {
