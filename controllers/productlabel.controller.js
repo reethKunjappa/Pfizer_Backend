@@ -338,7 +338,8 @@ exports.viewConflictProject = function (req, res) {
 };
 
 exports.commentAck = function (req, res) {
-    ProductLabel.findById(req.body.projectId)
+    var pythonComments = [];
+    ProductLabel.findById(req.body.projectId).populate('conflict.comments')
         .then(function (project) {
             var userProject = _.groupBy(req.body.comments, "_id");
             project.conflicts.comments.forEach(function (comment) {
@@ -346,6 +347,10 @@ exports.commentAck = function (req, res) {
                     comment.action = userProject[comment._id][0].action;
                     comment.actionOn = Date.now();
                     comment.actionBy = req.body.user;
+                    pythonComments.push({
+                        comment_id: comment.comment_id,
+                        action: userProject[comment._id][0].action
+                    })
                 }
                 return comment;
             });
@@ -355,7 +360,7 @@ exports.commentAck = function (req, res) {
             var audit = {
                 user: req.body.user,
                 project: project,
-                comments: req.body.comments,
+                comments: pythonComments,
                 actionType: "PROJECT_COMMENTS_ACK"
             };
             return Audit.create(audit);
