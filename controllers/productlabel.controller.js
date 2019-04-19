@@ -105,6 +105,8 @@ exports.compare = function (req, res) {
     var fileVirtualPath = appConfig["DOCUMENT_VIEW_PATH"];
     var cfilePath, cVpath;
     var coreDoc;
+    var mapSpecApIPayload = {};
+
     return ProductLabel.findOne({ _id: req.body._id })
         .populate("documents")
         .then(function (_project) {
@@ -124,7 +126,7 @@ exports.compare = function (req, res) {
                     country_name: project.country.name
                 };
                 var basePath = path.resolve("./");
-                payload.file_id = project._id;
+                mapSpecApIPayload.project_id = project._id;
                 project.documents.forEach(element => {
                     var filePath = path.resolve(
                         basePath,
@@ -136,19 +138,20 @@ exports.compare = function (req, res) {
                             coreDoc = element;
                             conflictDoc = _.cloneDeep(coreDoc);
                             var id = uuid();
+                            payload.file_id = element._id;
                             conflictDoc.documentId = id;
                             conflictDoc.fileType = "CONFLICT";
                             conflictDoc.destination =
                                 fileVirtualPath + "/" + id + "/" + element.documentName;
                             conflictDoc.location = fileUploadPath + "/" + id;
                             cVpath = conflictDoc.destination;
-                            payload.label_filepath = path.resolve(
-                                "./",
-                                conflictDoc.location,
-                                conflictDoc.documentName
-                            );
+                            payload.label_filepath = path.resolve("./", conflictDoc.location, conflictDoc.documentName);
+
+                            mapSpecApIPayload.file_id = element._id;
+
                             break;
                         case "Reference":
+                            mapSpecApIPayload.ref_id = element._id;
                             payload.reference_filepath.push(filePath);
                             break;
                         case "Previous Label":
@@ -225,7 +228,8 @@ exports.compare = function (req, res) {
             return Promise.props({
                 pdf: convertDocToPdf(cfilePath),
                 project: projectObj,
-                label: DocumentSchema.findById(coreDoc._id)
+                label: DocumentSchema.findById(coreDoc._id),
+                // mappingSpec: generateMappingSpec(mapSpecApIPayload)
             });
         })
         .then(function (result) {
@@ -381,3 +385,18 @@ exports.commentAck = function (req, res) {
             );
         });
 };
+
+
+
+function generateMappingSpec(payload) {
+    const options = {
+        uri: "http://34.204.2.145:3001/",
+        method: "POST",
+        json: true,
+        body: payload,
+        headers: {
+            "Content-Type": "application/json"
+        }
+    };
+    return rp(options);
+}
