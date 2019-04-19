@@ -342,9 +342,27 @@ exports.viewConflictProject = function (req, res) {
 };
 
 exports.commentAck = function (req, res) {
-    var pythonComments = [];
-    ProductLabel.findById(req.body.projectId).populate('conflict.comments')
-        .then(function (project) {
+    var project, pythonComments = [] ;
+    ProductLabel.findById(req.body.projectId).populate('documents')
+        .then(function (_project) {
+            project = _project
+            var labelDoc = _.find(project.documents, { fileType: 'Label' });
+           var payload = { 
+              "label_filepath": path.resolve('./', labelDoc.location, labelDoc.documentName),
+              "file_id":project._id,
+              "comments":req.body.comments
+           };
+            const options = {
+               // uri: "http://34.204.2.145:3001/",
+                method: "POST",
+                json: true,
+                body: payload,
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            };
+            return rp(options);
+        }).then(function(pyresponse){
             var userProject = _.groupBy(req.body.comments, "_id");
             project.conflicts.comments.forEach(function (comment) {
                 if (userProject[comment._id]) {
