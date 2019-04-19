@@ -408,7 +408,8 @@ exports.commentAck = function (req, res) {
 
 function generateMappingSpec(payload) {
     const options = {
-        uri: "http://34.204.2.145:3001/",
+        //ToDO: Update on getting the ip address
+        uri: "http://34.204.2.145:30012/",
         method: "POST",
         json: true,
         body: payload,

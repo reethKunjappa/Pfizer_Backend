@@ -6,9 +6,7 @@ const { DB_URL, NODE_PORT, NODE_ENV } = require('./config/appConfig');
 console.log('##########################################')
 console.log(DB_URL);
 
-var port = NODE_PORT || 5555; // Setup server port
-var morgan = require('morgan');
-var passport = require('passport');
+var port = process.env.PORT || NODE_PORT || 5555; // Setup server port
 var appConfig = require('./config/appConfig');
 app.use(appConfig.DOCUMENT_VIEW_PATH, express.static(appConfig.FS_PATH));
 var bodyParser = require('body-parser');
@@ -26,6 +24,7 @@ mongoose.connect(DB_URL, { useNewUrlParser: true })
 
 
 app.use(function (req, res, next) {
+    req.setTimeout(0);
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
