@@ -169,7 +169,7 @@ exports.compare = function (req, res) {
                             break;
                     }
                 });
-
+        
                 const options = {
                     uri: "http://34.204.2.145:3001/",
                     method: "POST",
