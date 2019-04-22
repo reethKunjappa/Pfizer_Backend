@@ -46,7 +46,8 @@ router.post('/labelling/updateComments', commentsController.updateComments);
 router.post('/labelling/getAllComments', commentsController.getAllComments);
 //Audit/History
 router.post("/labelling/auditHistory", documentController.auditHistory);
-
+//MappingSpec
+router.route('/labelling/getMappingSpec').post(productlabelController.getMappingSpec);
 
 // Verify JWT Jokens from REST
 function verifyToken(req, res, next) {

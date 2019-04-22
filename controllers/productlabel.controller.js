@@ -2,6 +2,7 @@ var jwt = require("jsonwebtoken");
 var config = require("../config/database");
 const { ProductLabel, DocumentSchema } = require("../models/model");
 var FavouriteSchema = require("../models/favourite.model");
+var mappingSpecScema = require("../models/mappingspec.model"); 
 var Audit = require("../models/audit.model");
 const { responseGenerator } = require("../utility/commonUtils");
 var { mkdir, convertDocToPdf } = require("../utility/commonUtils");
@@ -349,7 +350,7 @@ exports.commentAck = function (req, res) {
             var labelDoc = _.find(project.documents, { fileType: 'Label' });
            var payload = { 
               "label_filepath": path.resolve('./', labelDoc.location, labelDoc.documentName),
-              "file_id":project._id,
+               "file_id": labelDoc._id,
               "comments":req.body.comments
            };
             const options = {
@@ -363,6 +364,16 @@ exports.commentAck = function (req, res) {
             };
             return rp(options);
         }).then(function(pyresponse){
+            return convertDocToPdf(cfilePath)
+        }).then(function(result){
+            var cpath = cfilePath.replace(path.extname(cfilePath), ".pdf");
+            var label = _.find(project.documents,{fileType:'Label'});
+
+            label.pdfPath = {
+                location: cpath,
+                destination: cpath.replace(path.resolve('./fs/'),'/views/')
+            };
+
             var userProject = _.groupBy(req.body.comments, "_id");
             project.conflicts.comments.forEach(function (comment) {
                 if (userProject[comment._id]) {
@@ -376,12 +387,14 @@ exports.commentAck = function (req, res) {
                 }
                 return comment;
             });
-            return project.save();
+            return Promise.props({project:
+                project.save(),
+                label :  label.save()
         })
-        .then(function (project) {
+        .then(function (result) {
             var audit = {
                 user: req.body.user,
-                project: project,
+                project: result.project,
                 comments: pythonComments,
                 actionType: "PROJECT_COMMENTS_ACK"
             };
@@ -402,9 +415,19 @@ exports.commentAck = function (req, res) {
                 responseGenerator(-1, "Unable to fetch the Project details", err)
             );
         });
-};
+});
 
 
+exports.getMappingSpec = function(req, res){
+    return mappingSpecScema.find(req.body).sort({ created_at: -1})
+    .then(function(doc){
+        return res.json(responseGenerator(0, "Successfully Fetched MappingSpec Document!",doc[0]));
+    })
+    .catch(function(err){
+        return res.json(responseGenerator(-1, "Unable to fetch mapping spec", err))
+    });
+    
+}
 
 function generateMappingSpec(payload) {
     const options = {
@@ -418,4 +441,4 @@ function generateMappingSpec(payload) {
         }
     };
     return rp(options);
-}
+}}
