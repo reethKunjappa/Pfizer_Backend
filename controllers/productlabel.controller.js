@@ -247,7 +247,7 @@ exports.compare = function (req, res) {
             res.send(responseGenerator(1, "Compared", project));
             var audit = {
                 user: project.createdBy,
-                project: project._id,
+                project: project,
                 actionType: "COMPARE_DOCUMENT",
                 description: {
                     documents: project.documents

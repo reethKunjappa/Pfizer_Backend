@@ -3,7 +3,7 @@ const { getModel } = require('../models/model');
 var rimraf = require('rimraf');
 
 
-var pythonConvertAPI = "http://34.204.2.145:4000/";
+var pythonConvertAPI = "http://54.164.151.252:3009/";
 
 exports.generateId = function (preceed, model) {
     return new Promise(function (resolve, reject) {
@@ -17,7 +17,7 @@ exports.generateId = function (preceed, model) {
                 resolve(uniqueId);
             }
         });
-    });
+    }); 
 };
 
 exports.convertDocToPdf = function (path) {
