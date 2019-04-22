@@ -124,7 +124,8 @@ exports.compare = function (req, res) {
                     previousLabel_filepath: [],
                     fontFormat_filepath: [],
                     reference_filepath: [],
-                    country_name: project.country.name
+                    country_name: project.country.name,
+                    project_id :project._id
                 };
                 var basePath = path.resolve("./");
                 mapSpecApIPayload.project_id = project._id;
@@ -147,7 +148,6 @@ exports.compare = function (req, res) {
                             conflictDoc.location = fileUploadPath + "/" + id;
                             cVpath = conflictDoc.destination;
                             payload.label_filepath = path.resolve("./", conflictDoc.location, conflictDoc.documentName);
-
                             mapSpecApIPayload.file_id = element._id;
 
                             break;
@@ -419,6 +419,7 @@ exports.commentAck = function (req, res) {
 
 
 exports.getMappingSpec = function(req, res){
+
     return mappingSpecScema.find(req.body).sort({ created_at: -1})
     .then(function(doc){
         return res.json(responseGenerator(0, "Successfully Fetched MappingSpec Document!",doc[0]));

@@ -26,11 +26,11 @@ var CommentsSchema = new Schema({
     index: {
         type: Number
     },
-    document_id: { type: mongoose.Schema.ObjectId, ref: DocumentSchema },
+    document_id: { type: mongoose.Schema.ObjectId, ref: 'DocumentSchema' },
     target_text: {
         type: String
     },
-    project_id: { type: mongoose.Schema.ObjectId, ref: ProductSchema },
+    project_id: { type: mongoose.Schema.ObjectId, ref: 'ProductSchema' },
     action: {
         type: String
     },
