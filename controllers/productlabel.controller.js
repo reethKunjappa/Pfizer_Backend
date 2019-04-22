@@ -171,7 +171,7 @@ exports.compare = function (req, res) {
                 });
         
                 const options = {
-                    uri: "http://34.204.2.145:3001/",
+                    uri: "http://54.164.151.252:3001/",
                     method: "POST",
                     json: true,
                     body: payload,
@@ -354,7 +354,7 @@ exports.commentAck = function (req, res) {
               "comments":req.body.comments
            };
             const options = {
-               // uri: "http://34.204.2.145:3001/",
+               // uri: "http://54.164.151.252:3001/",
                 method: "POST",
                 json: true,
                 body: payload,
@@ -433,7 +433,7 @@ exports.getMappingSpec = function(req, res){
 function generateMappingSpec(payload) {
     const options = {
         //ToDO: Update on getting the ip address
-        uri: "http://34.204.2.145:30012/",
+        uri: "http://54.164.151.252:30012/",
         method: "POST",
         json: true,
         body: payload,
