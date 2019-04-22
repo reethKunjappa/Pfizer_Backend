@@ -2,7 +2,8 @@ var jwt = require("jsonwebtoken");
 var config = require("../config/database");
 const { ProductLabel, DocumentSchema } = require("../models/model");
 var FavouriteSchema = require("../models/favourite.model");
-var mappingSpecScema = require("../models/mappingspec.model"); 
+var mappingSpecScema = require("../models/mappingspec.model");
+var ConflictComment = require("../models/conflict.model");
 var Audit = require("../models/audit.model");
 const { responseGenerator } = require("../utility/commonUtils");
 var { mkdir, convertDocToPdf } = require("../utility/commonUtils");
@@ -125,7 +126,7 @@ exports.compare = function (req, res) {
                     fontFormat_filepath: [],
                     reference_filepath: [],
                     country_name: project.country.name,
-                    project_id :project._id
+                    project_id: project._id
                 };
                 var basePath = path.resolve("./");
                 mapSpecApIPayload.project_id = project._id;
@@ -169,7 +170,7 @@ exports.compare = function (req, res) {
                             break;
                     }
                 });
-        
+
                 const options = {
                     uri: "http://54.164.151.252:3001/",
                     method: "POST",
@@ -209,21 +210,13 @@ exports.compare = function (req, res) {
                 result.conflicts.conflict_type
             );
             project.conflicted = true;
-            project.conflicts.comments = _.map(result.comments, function (comment) {
-                return _.mapKeys(comment, function (value, key) {
-                    switch (key) {
-                        case "comment_text":
-                            return "text";
-                        case "conflict_type":
-                            return "type";
-                        case "reference_doc":
-                            return "referenceDoc";
-                        default:
-                            return key;
-                    }
-                });
-            });
-            return project.save();
+            var comments = result.font_comments.concat(result.order_comments);
+            comments = comments.concat(result.err_comments);
+            return ConflictComment.find({ comment_id: _.map(comments, 'comment_id') }, { _id: 1 })
+                .then(function (comments) {
+                    project.conflicts.comments = _.map(comments, '_id');
+                    return project.save();
+                })
         })
         .then(function (projectObj) {
             return Promise.props({
@@ -343,18 +336,18 @@ exports.viewConflictProject = function (req, res) {
 };
 
 exports.commentAck = function (req, res) {
-    var project, pythonComments = [] ;
+    var project, pythonComments = [];
     ProductLabel.findById(req.body.projectId).populate('documents')
         .then(function (_project) {
             project = _project
             var labelDoc = _.find(project.documents, { fileType: 'Label' });
-           var payload = { 
-              "label_filepath": path.resolve('./', labelDoc.location, labelDoc.documentName),
-               "file_id": labelDoc._id,
-              "comments":req.body.comments
-           };
+            var payload = {
+                "label_filepath": path.resolve('./', labelDoc.location, labelDoc.documentName),
+                "file_id": labelDoc._id,
+                "comments": req.body.comments
+            };
             const options = {
-               // uri: "http://54.164.151.252:3001/",
+                // uri: "http://54.164.151.252:3001/",
                 method: "POST",
                 json: true,
                 body: payload,
@@ -363,15 +356,15 @@ exports.commentAck = function (req, res) {
                 }
             };
             return rp(options);
-        }).then(function(pyresponse){
+        }).then(function (pyresponse) {
             return convertDocToPdf(cfilePath)
-        }).then(function(result){
+        }).then(function (result) {
             var cpath = cfilePath.replace(path.extname(cfilePath), ".pdf");
-            var label = _.find(project.documents,{fileType:'Label'});
+            var label = _.find(project.documents, { fileType: 'Label' });
 
             label.pdfPath = {
                 location: cpath,
-                destination: cpath.replace(path.resolve('./fs/'),'/views/')
+                destination: cpath.replace(path.resolve('./fs/'), '/views/')
             };
 
             var userProject = _.groupBy(req.body.comments, "_id");
@@ -387,59 +380,61 @@ exports.commentAck = function (req, res) {
                 }
                 return comment;
             });
-            return Promise.props({project:
-                project.save(),
-                label :  label.save()
-        })
-        .then(function (result) {
-            var audit = {
-                user: req.body.user,
-                project: result.project,
-                comments: pythonComments,
-                actionType: "PROJECT_COMMENTS_ACK"
-            };
-            return Audit.create(audit);
-        })
-        .then(function (audit) {
-            return res.json(
-                responseGenerator(
-                    0,
-                    "Successfully updated comments Ack",
-                    req.body.comments,
-                    0
-                )
-            );
-        })
-        .catch(function (err) {
-            return res.json(
-                responseGenerator(-1, "Unable to fetch the Project details", err)
-            );
+            return Promise.props({
+                project:
+                    project.save(),
+                label: label.save()
+            })
+                .then(function (result) {
+                    var audit = {
+                        user: req.body.user,
+                        project: result.project,
+                        comments: pythonComments,
+                        actionType: "PROJECT_COMMENTS_ACK"
+                    };
+                    return Audit.create(audit);
+                })
+                .then(function (audit) {
+                    return res.json(
+                        responseGenerator(
+                            0,
+                            "Successfully updated comments Ack",
+                            req.body.comments,
+                            0
+                        )
+                    );
+                })
+                .catch(function (err) {
+                    return res.json(
+                        responseGenerator(-1, "Unable to fetch the Project details", err)
+                    );
+                });
         });
-});
 
 
-exports.getMappingSpec = function(req, res){
+    exports.getMappingSpec = function (req, res) {
 
-    return mappingSpecScema.find(req.body).sort({ created_at: -1})
-    .then(function(doc){
-        return res.json(responseGenerator(0, "Successfully Fetched MappingSpec Document!",doc[0]));
-    })
-    .catch(function(err){
-        return res.json(responseGenerator(-1, "Unable to fetch mapping spec", err))
-    });
-    
+        return mappingSpecScema.find(req.body).sort({ created_at: -1 })
+            .then(function (doc) {
+                return res.json(responseGenerator(0, "Successfully Fetched MappingSpec Document!", doc[0]));
+            })
+            .catch(function (err) {
+                return res.json(responseGenerator(-1, "Unable to fetch mapping spec", err))
+            });
+
+    }
+
+    function generateMappingSpec(payload) {
+        const options = {
+            //ToDO: Update on getting the ip address
+            uri: "http://54.164.151.252:30012/",
+            method: "POST",
+            json: true,
+            body: payload,
+            headers: {
+                "Content-Type": "application/json"
+            }
+        };
+        return rp(options);
+    }
 }
-
-function generateMappingSpec(payload) {
-    const options = {
-        //ToDO: Update on getting the ip address
-        uri: "http://54.164.151.252:30012/",
-        method: "POST",
-        json: true,
-        body: payload,
-        headers: {
-            "Content-Type": "application/json"
-        }
-    };
-    return rp(options);
-}}
