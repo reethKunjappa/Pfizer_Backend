@@ -11,6 +11,7 @@ var documentController = require('../controllers/document.controller');
 var dashboardController = require('../controllers/dashboard.controller');
 var favouriteController = require('../controllers/favourite.controller');
 var commentsController = require('../controllers/comments.controller');
+var checkListController = require('../controllers/checklist.controller');
 
 //authController
 router.route('/auth/register').post(authController.new);
@@ -47,7 +48,12 @@ router.post('/labelling/getAllComments', commentsController.getAllComments);
 //Audit/History
 router.post("/labelling/auditHistory", documentController.auditHistory);
 //MappingSpec
-//router.post('/labelling/getMappingSpec',productlabelController.getMappingSpec);
+router.post('/labelling/getMappingSpec',productlabelController.getMappingSpec);
+
+
+//CheckList
+
+router.post("/checkList", checkListController.getAllCheckList);
 
 // Verify JWT Jokens from REST
 function verifyToken(req, res, next) {

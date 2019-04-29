@@ -6,7 +6,6 @@ var AuditSchema = new Schema({
    project: {
 _id:{
            type: Schema.Types.ObjectId,
-           required: true,
            ref: 'ProductLabel'
     },
         projectName:String

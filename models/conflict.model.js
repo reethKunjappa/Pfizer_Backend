@@ -26,11 +26,11 @@ var CommentsSchema = new Schema({
     index: {
         type: Number
     },
-    document_id: { type: mongoose.Schema.ObjectId, ref: 'DocumentSchema' },
+    document_id: { type: String },
     target_text: {
         type: String
     },
-    project_id: { type: mongoose.Schema.ObjectId, ref: 'ProductSchema' },
+    project_id: { type: String },
     action: {
         type: String
     },
@@ -45,7 +45,8 @@ var CommentsSchema = new Schema({
 
     }
 }, {
-        timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
+        timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
+        strict : false
     });
 
-module.exports = mongoose.model('ConflictComments', CommentsSchema);
+module.exports = mongoose.model('conflicts', CommentsSchema);

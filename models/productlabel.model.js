@@ -42,12 +42,13 @@ var ProductLabelSchema = new Schema({
         type: Number,
         default: 0
       },
-      spellCheck: {
+      spell_grammar: {
         type: Number,
         default: 0
       },
     },
-    comments: [{ type: mongoose.Schema.ObjectId, ref: ConflictCommentSchema }]
+      comments:[]
+      //comments: [{ type: mongoose.Schema.ObjectId, ref: ConflictCommentSchema }]
   },
   documents: [{ type: mongoose.Schema.ObjectId, ref: DocumentSchema }]
 }, {

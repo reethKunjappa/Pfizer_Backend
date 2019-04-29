@@ -170,18 +170,19 @@ exports.uploadFile = function (req, resp) {
                             documentSchema.location = fileUploadPath;
                             documentSchema.uploadedBy = JSON.parse(req.query.uploadedBy);
                             documentSchema.uploadedDate = new Date();
-                            convertToImage(path.extname(documentSchema.documentName), path.resolve(documentSchema.location, documentSchema.documentName), function (err, pdfPath) {
-                                documentSchema.pdfPath = {
-                                    location: pdfPath,
-                                    destination: fileVirtualPath + "/" + documentId + "/" + path.basename(pdfPath)
-                                };
-                                documentSchema.save(function (err) {
-                                    if (err) {
-                                        resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
-                                    } else {
-                                        updateProjectLabelInfo(req, resp, documentSchema, req.query.projectId, documentSchema._id, (oldDocuments[documentSchema.documentName] === undefined));
-                                    }
-                                })
+                            // convertToImage(path.extname(documentSchema.documentName), path.resolve(documentSchema.location, documentSchema.documentName), function (err, pdfPath) {
+                            //     documentSchema.pdfPath = {
+                            //         location: pdfPath,
+                            //         destination: fileVirtualPath + "/" + documentId + "/" + path.basename(pdfPath)
+                            //     };
+                               
+                            // });
+                            documentSchema.save(function (err) {
+                                if (err) {
+                                    resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
+                                } else {
+                                    updateProjectLabelInfo(req, resp, documentSchema, req.query.projectId, documentSchema._id, (oldDocuments[documentSchema.documentName] === undefined));
+                                }
                             })
                         }
                     })
@@ -236,6 +237,9 @@ exports.viewDocument = function (req, res) {
 };
 
 function updateProjectLabelInfo(req, resp, document, projectId, newDocId, isNew) {
+    console.log(projectId)
+    console.log(newDocId)
+    console.log(isNew);
 
     ProductLabel.findOne({ _id: projectId }).exec(function (err, project) {
         if (err)

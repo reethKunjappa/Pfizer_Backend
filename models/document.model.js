@@ -37,6 +37,7 @@ var DocumentSchema = new Schema({
     version: {
         type: String
     },
+    labelCopy:{},
     _deleted: {
         type: Boolean,
         default: false

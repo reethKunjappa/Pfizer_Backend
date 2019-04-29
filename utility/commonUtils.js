@@ -21,6 +21,7 @@ exports.generateId = function (preceed, model) {
 };
 
 exports.convertDocToPdf = function (path) {
+    console.log("Python convertToPDF mode*********");
     var rp = require('request-promise');
     var options = {
         method: 'POST',
