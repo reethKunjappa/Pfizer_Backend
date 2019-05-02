@@ -30,6 +30,7 @@
     "pdf-image": "^2.0.0",
     "pdftoimage": "^1.0.0",
     "phantomjs-prebuilt": "^2.1.16",
+    "pm2": "^3.5.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
     "rimraf": "^2.6.3",

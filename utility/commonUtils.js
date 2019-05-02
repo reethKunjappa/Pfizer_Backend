@@ -3,7 +3,7 @@ const { getModel } = require('../models/model');
 var rimraf = require('rimraf');
 
 
-var pythonConvertAPI = "http://54.164.151.252:3009/";
+var pythonConvertAPI = "http://3.90.245.202:3009/";
 
 exports.generateId = function (preceed, model) {
     return new Promise(function (resolve, reject) {

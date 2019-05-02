@@ -13,7 +13,7 @@ var Promise = require('bluebird');
 var fileName = "";
 var multer = require('multer');
 var convert = require('./../utility/convert');
-
+var basePath = path.resolve("./");
 var storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, fileUploadPath)
@@ -75,12 +75,16 @@ exports.reUploadFile = function (req, resp) {
                 mimetype: file.mimetype,
                 destination: fileVirtualPath + "/" + documentId + "/" + file.originalname,
                 documentid: documentId,
-                projectId: req.query.projectId,
+                projectId: req.query.projectId,  
                 fileType: req.query.fileType,
                 version: "0.1",
                 location: fileUploadPath,
                 uploadedBy: JSON.parse(req.query.uploadedBy),
                 uploadedDate: new Date(),
+                pdfPath : {
+                    location : path.resolve(basePath,file.destination, file.originalname),
+                    destination : fileVirtualPath + "/" + documentId + "/" + file.originalname                             
+                }
             }
             return Promise.props({
                 pdfPath: convertToImagePromise(path.extname(document.documentName), path.resolve(document.location, document.documentName)),
@@ -163,6 +167,10 @@ exports.uploadFile = function (req, resp) {
                                 documentSchema.projectId = req.query.projectId;
                                 documentSchema.fileType = req.query.fileType;
                                 documentSchema.version = "0.1";
+                                documentSchema.pdfPath = {
+                                    location : path.resolve(basePath,req.files[i].destination, req.files[i].filename),
+                                    destination : fileVirtualPath + "/" + documentId + "/" + file[i].originalname                              
+                                }
                             } else {
                                 documentSchema = oldDocuments[file[i].originalname][0];
                                 deleteFolder(path.resolve(process.cwd(), documentSchema.location))
