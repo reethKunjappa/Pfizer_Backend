@@ -81,6 +81,10 @@ exports.reUploadFile = function (req, resp) {
                 location: fileUploadPath,
                 uploadedBy: JSON.parse(req.query.uploadedBy),
                 uploadedDate: new Date(),
+                pdfPath : {
+                    location : path.resolve(basePath,file.destination, file.originalname),
+                    destination : fileVirtualPath + "/" + documentId + "/" + file.originalname                             
+                }
             }
             return Promise.props({
                 pdfPath: convertToImagePromise(path.extname(document.documentName), path.resolve(document.location, document.documentName)),
@@ -140,6 +144,7 @@ exports.uploadFile = function (req, resp) {
         function createUUID() {
             return documentId = uuid();
         }
+        var basePath = path.resolve("./");
         var id = createUUID();
         fileUploadPath = fileUploadPath + "/" + id;
         mkdir(fileUploadPath);
@@ -156,14 +161,21 @@ exports.uploadFile = function (req, resp) {
                             var documentId = id;
                             var documentSchema = new DocumentSchema();
                             if (!oldDocuments[file[i].originalname]) {
+                                //var filePath = path.resolve(basePath,req.files[i].destination, req.files[i].filename);
                                 documentSchema.documentName = file[i].originalname;
+                                var filePath = path.resolve(basePath,req.files[i].destination, req.files[i].filename);
                                 documentSchema.mimetype = file[i].mimetype;
                                 documentSchema.destination = fileVirtualPath + "/" + documentId + "/" + file[i].originalname;
                                 documentSchema.documentid = documentId;
                                 documentSchema.projectId = req.query.projectId;
                                 documentSchema.fileType = req.query.fileType;
                                 documentSchema.version = "0.1";
-                            } else {
+                                documentSchema.pdfPath = {
+                                    location : path.resolve(basePath,req.files[i].destination, req.files[i].filename),
+                                    destination : fileVirtualPath + "/" + documentId + "/" + file[i].originalname                              
+                                }
+                            } 
+                            else {
                                 documentSchema = oldDocuments[file[i].originalname][0];
                                 deleteFolder(path.resolve(process.cwd(), documentSchema.location))
                             }
