@@ -174,7 +174,7 @@ exports.compare = function (req, res) {
                 console.log("Conflict Iput");
              console.log(JSON.stringify(payload))
                 const options = {
-                    uri: "http://54.164.151.252:3001/",
+                    uri: "http://3.90.245.202:3001/",
                     method: "POST",
                     json: true,
                     body: payload,
@@ -495,24 +495,55 @@ exports.commentAck = function (req, res) {
                     "Successfully updated comments Ack",
                     comments_,
                     0
-                    )
-             );
-            })
-            .catch(function (err) {
-                console.log("Ack catch Err-------------------")
-                console.log(err);
-            return res.json(
-            responseGenerator(-1, "Unable to fetch the Project details", err)
-            );
-            });   
-        };
+                    ))
+                //})
+                
+            // });
+        
+   
+    })
+    .then(function (result) {
+        console.log(result.accept_modified, result.reject_modified)
+                var audit = {
+                user: req.body.user,
+                project: result.project,
+                comments: req.body.comments,
+                actionType: "PROJECT_COMMENTS_ACK"
+                };
+                return Audit.create(audit);
+                })
+    .then(function (audit) {
+        return Promise.props({ 
+            comments : ConflictComment.find({project_id: req.body.projectId, _deleted: false}),
+            project : ProductLabel.findById(req.body.projectId).populate('documents')
+        });
+               
+    })
+    .then(comments_ => {
+        return res.json(
+            responseGenerator(
+            0,
+            "Successfully updated comments Ack",
+            comments_,
+            0
+            )
+     );
+    })
+    .catch(function (err) {
+        console.log("Ack catch Err-------------------")
+        console.log(err);
+    return res.json(
+    responseGenerator(-1, "Unable to fetch the Project details", err)
+    );
+    }); 
+ };
 
 
     exports.getMappingSpec = function (req, res) {
         console.log("Mapping Speic =========================================================");
         const options = {
             //ToDO: Update on getting the ip address
-            uri: "http://54.164.151.252:3000",
+            uri: "http://3.90.245.202:3000",
             method: "POST",
             json: true,
             body: req.body,
@@ -536,7 +567,7 @@ exports.commentAck = function (req, res) {
     function generateMappingSpec(payload) {
         const options = {
             //ToDO: Update on getting the ip address
-            uri: "http://54.164.151.252:3000",
+            uri: "http://3.90.245.202:3000",
             method: "POST",
             json: true,
             body: payload,
