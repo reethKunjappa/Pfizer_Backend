@@ -174,7 +174,7 @@ exports.compare = function (req, res) {
                 console.log("Conflict Iput");
              console.log(JSON.stringify(payload))
                 const options = {
-                    uri: "http://3.90.245.202:3001/",
+                    uri: "http://localhost:3001/",
                     method: "POST",
                     json: true,
                     body: payload,
@@ -543,7 +543,7 @@ exports.commentAck = function (req, res) {
         console.log("Mapping Speic =========================================================");
         const options = {
             //ToDO: Update on getting the ip address
-            uri: "http://3.90.245.202:3000",
+            uri: "http://localhost:3000",
             method: "POST",
             json: true,
             body: req.body,
@@ -567,7 +567,7 @@ exports.commentAck = function (req, res) {
     function generateMappingSpec(payload) {
         const options = {
             //ToDO: Update on getting the ip address
-            uri: "http://3.90.245.202:3000",
+            uri: "http://localhost:3000",
             method: "POST",
             json: true,
             body: payload,
