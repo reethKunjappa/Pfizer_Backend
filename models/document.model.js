@@ -38,6 +38,7 @@ var DocumentSchema = new Schema({
         type: String
     },
     labelCopy:{},
+    originalPath :{},
     _deleted: {
         type: Boolean,
         default: false

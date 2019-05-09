@@ -249,10 +249,6 @@ exports.viewDocument = function (req, res) {
 };
 
 function updateProjectLabelInfo(req, resp, document, projectId, newDocId, isNew) {
-    console.log(projectId)
-    console.log(newDocId)
-    console.log(isNew);
-
     ProductLabel.findOne({ _id: projectId }).exec(function (err, project) {
         if (err)
             resp.json(responseGenerator(-1, "File uploaded but unable to find the respective project", ""));

@@ -5,20 +5,21 @@ var FavouriteSchema = require("../models/favourite.model");
 var mappingSpecScema = require("../models/mappingspec.model");
 var ConflictComment = require("../models/conflict.model");
 var Audit = require("../models/audit.model");
-const { responseGenerator } = require("../utility/commonUtils");
-var { mkdir, convertDocToPdf } = require("../utility/commonUtils");
+var { mkdir, convertDocToPdf, responseGenerator } = require("../utility/commonUtils");
 var Promise = require("bluebird");
 var path = require("path");
 var rp = require("request-promise");
 var fs = require("fs");
 var uuid = require("uuid-v4");
 const appConfig = require("../config/appConfig");
+const { PYTHON_URL_CONFLITS, PYTHON_URL_MAPPING } = require('../config/appConfig');
 var _ = require("lodash");
 require("mongoose").set("debug", true);
 
 var utility = require("./../utility/convert");
 
-exports.newProject = function (req, res) {
+exports.newProject = (req, res,next) => {
+    const { projectName, country, createdBy, ownerName } = req.body
     var productLabel = new ProductLabel();
     var conflicts = {
         total: 0,
@@ -29,30 +30,35 @@ exports.newProject = function (req, res) {
         },
         comments: []
     };
-    productLabel.projectName = req.body.projectName;
-    productLabel.country = req.body.country;
-    productLabel.createdBy = req.body.createdBy;
-    productLabel.ownerName = req.body.ownerName;
+    productLabel.projectName = projectName;
+    productLabel.country = country;
+    productLabel.createdBy = createdBy;
+    productLabel.ownerName = ownerName;
     productLabel.createdOn = new Date();
     //As per UI requirement(Shashank) inserting static conflicts and favorite
     productLabel.conflicts = conflicts;
     productLabel.favorite = 0;
-
-    productLabel.save(function (err) {
+    if(projectName && country && createdBy){
+    productLabel.save( (err) => {
         if (err) res.json(responseGenerator(-1, "Project already exists.", err));
         else {
             res.json(
-                responseGenerator(0, "Successfully created Project", productLabel)
+                responseGenerator(0, "Project created Successfully", productLabel)
             );
             //create audit for new project
             var audit = {
                 user: productLabel.createdBy,
                 project: productLabel,
+                comments : "Project created",
+                description : {documentName :"Project created"},
                 actionType: "PROJECT_CREATE"
             };
             return Audit.create(audit);
         }
     });
+}else{
+        res.json(responseGenerator(-1, "Mandatory fields Missed", ""));
+}
 };
 
 exports.getProjects = function (req, res) {
@@ -98,7 +104,10 @@ exports.viewProject = function (req, res) {
         console.log(e);
     }
 };
+var startTime = new Date();
+var pythonStartTime = new Date();
 exports.compare = function (req, res) {
+    startTime = new Date();
     var project = {};
     var conflictDoc = {
         type: "CONFLICT"
@@ -151,7 +160,10 @@ exports.compare = function (req, res) {
                             cVpath = conflictDoc.destination;
                             payload.label_filepath = path.resolve("./", conflictDoc.location, conflictDoc.documentName);
                             mapSpecApIPayload.file_id = element._id;
-
+                            conflictDoc["originalPath"] ={
+                                location : conflictDoc.pdfPath.location,
+                                destination : conflictDoc.destination,
+                            }
                             break;
                         case "Reference":
                             mapSpecApIPayload.ref_id = element._id;
@@ -171,10 +183,8 @@ exports.compare = function (req, res) {
                             break;
                     }
                 });
-                console.log("Conflict Iput");
-             console.log(JSON.stringify(payload))
                 const options = {
-                    uri: "http://localhost:3001/",
+                    uri: PYTHON_URL_CONFLITS,
                     method: "POST",
                     json: true,
                     body: payload,
@@ -195,60 +205,56 @@ exports.compare = function (req, res) {
                     fs.mkdirSync(destPath.replace(conflictDoc.documentName, ""));
                 }
                 fs.copyFileSync(srcPath, destPath);
-               console.log("*************** CONFLICT PYTHON INPUT **********************")
-               console.log(options);
+                pythonStartTime = new Date();
+                console.log("Python Start Execution Time : %dms ",pythonStartTime)
+                console.log(JSON.stringify(options));
                 return rp(options);
             } else {
                 throw new Error();
             }
         })
         .then(function (result) {
-            
-
+            console.log("Python End Execution Time : %dms", new Date())
+            console.log("Total Python Execution Time : %dms", new Date() - pythonStartTime)
+            console.log("Python Conflicts result");
+            console.log(JSON.stringify(result.conflicts));
             if (result.error) {
                 throw new Error(result.message);
-         }
-        
+            }
+
             cfilePath = result.filepath;
             project.conflicts = result.conflicts;
             project.conflicts.types = result.conflicts.conflict_type;
-            console.log("*************** CONFLICT PYTHON OUTPUT **********************")
-            console.log(JSON.stringify(result.conflicts.conflict_type));
-            console.log(JSON.stringify(result.conflicts));
-            /*   _.extend(
-                project.conflicts.types,
-                result.conflicts.conflict_type
-            ); */
-           // console.log(project.conflicts.types )
             project.conflicted = true;
+            var project_id = req.body._id;
 
-        var project_id = req.body._id;
+            return Promise.props({
+                startTime : new Date(),
+                comments: ConflictComment.find({ project_id: project_id, _deleted: false }),
+                project: project.save()
+            })
 
-           return Promise.props({ comments: ConflictComment.find({ project_id: project_id , _deleted : false}),
-           project : project.save()})
-              
         })
         .then(function (result) {
-                   console.log("Result************");
+            console.log("Node comments fetching from DB : %dms", new Date()-result.startTime);
             return Promise.props({
                 project: result.project,
                 label: DocumentSchema.findById(coreDoc._id),
-                comments : result.comments
-                // mappingSpec: generateMappingSpec(mapSpecApIPayload)
-            }); 
-            }) 
+                comments: result.comments,
+                startTime
+            });
+        })
         .then(function (projectObj) {
-            console.log("convertDocToPdf******************");
             return Promise.props({
+                startTime : new Date(),
                 pdf: convertDocToPdf(cfilePath),
                 project: projectObj.project,
-                label: DocumentSchema.findById(coreDoc._id),
-                comments : projectObj.comments
-                // mappingSpec: generateMappingSpec(mapSpecApIPayload)
+                label: projectObj.label,
+                comments: projectObj.comments
             });
         })
         .then(function (result) {
-            
+            console.log("Convert from doc to pdf python : %dms", new Date()- result.startTime);
             var cpath = cfilePath.replace(path.extname(cfilePath), ".pdf");
             result.label.pdfPath = {
                 location: cpath,
@@ -257,18 +263,19 @@ exports.compare = function (req, res) {
             result.label.labelCopy = {
                 location: cfilePath,
                 destination: cVpath
-            }; 
+            };
+
+            result.label.originalPath = conflictDoc.originalPath;
             return Promise.props({
-                project:  result.label.save().then(function () {
+                project: result.label.save().then(function () {
                     return ProductLabel.findById(result.project._id).populate("documents");
                 }),
-                comments : result.comments
-                // mappingSpec: generateMappingSpec(mapSpecApIPayload)
+                comments: result.comments
             });
-            
+
         })
         .then(function (project) {
-        
+            console.log('Total Execution time: %dms', new Date()- startTime);
             res.send(responseGenerator(1, "Compared", project));
             var audit = {
                 user: project.project.createdBy,
@@ -344,218 +351,175 @@ function getUserFav(req, res, projects) {
 }
 
 exports.viewConflictProject = function (req, res) {
-    var response ={};
+    var response = {};
     try {
         ProductLabel.findOne({ _id: req.body._id })
             .populate("documents")
             .exec(function (err, project) {
                 response.project = project;
-                ConflictComment.find({ project_id: req.body._id,_deleted:false },function(err,comments){
+                ConflictComment.find({ project_id: req.body._id, _deleted: false }, function (err, comments) {
                     response.comments = comments;
                     if (err)
-                    res.json(
-                        responseGenerator(-1, "Unable to fetch the Project details", err)
-                    );
-                else
-                    res.json(
-                        responseGenerator(
-                            0,
-                            "Successfully retrieved Project details",
-                            response,
-                            0
-                        )
-                    );
-
+                        res.json(
+                            responseGenerator(-1, "Unable to fetch the Project details", err)
+                        );
+                    else
+                        res.json(
+                            responseGenerator(
+                                0,
+                                "Successfully retrieved Project details",
+                                response,
+                                0
+                            )
+                        );
                 })
-                            });
+            });
     } catch (e) {
         console.log(e);
     }
 };
 
 exports.commentAck = function (req, res) {
-            var project, pythonComments = [];
-            ProductLabel.findById(req.body.projectId).populate('documents')
-            .then(function (_project) {
-                       
-                        project = _project
-                        var labelDoc = _.find(project.documents, { fileType: 'Label' });
-                        var payload = {
-                        "label_filepath": labelDoc.labelCopy.location,
-                        //"label_filepath": path.resolve('./', labelDoc.location, labelDoc.documentName),
-                        "file_id": labelDoc.id,
-                        "project_id":req.body.projectId,
-                        "comments": req.body.comments
-                        };
-                        console.log("*************** ACCEPT/REJECT PYTHON INPUT **********************")
-                        console.log(JSON.stringify(payload));
-                        const options = {
-                        uri: "http://54.164.151.252:3001/accept",
-                        method: "POST",
-                        json: true,
-                        body: payload,
-                        headers: {
-                        "Content-Type": "application/json"
-                        }
-                        };
-                        return rp(options);
-            }).then(function (pyresponse) {
-                console.log("*************** ACCEPT/REJECT PYTHON RESPONSE **********************")
-                console.log(JSON.stringify(pyresponse));
-                        return Promise.props({
-                            pdf: convertDocToPdf(pyresponse.label_filepath),
-                            cfilePath: pyresponse.label_filepath
-                        });
-                        //return convertDocToPdf(pyresponse.label_filepath);
-            }).then(function (result) {
-                console.log(JSON.stringify(result.cfilePath));
-                    var cpath = result.cfilePath.replace(path.extname(result.cfilePath), ".pdf");
-                    var label = _.find(project.documents, { fileType: 'Label' });
+    var project, pythonComments = [];
+    ProductLabel.findById(req.body.projectId).populate('documents')
+        .then(function (_project) {
 
-                    label.pdfPath = {
-                    location: cpath,
-                    destination:  label.labelCopy.destination.replace(path.extname(label.documentName), ".pdf")
-                    };
-                    var comments = req.body.comments;
-                    var acceptedComment =[];
-                    var rejectedComment = [];
-                    var orderCount = 0;
-                    var fontSizeCount =0;
-                    var grammarSpellingCount = 0;
-                    var orderCount =0;
-                    var contentCount =0;
-                    comments.forEach(function (comment) {
-                        if(comment.action == "ACCEPT"){
-                            acceptedComment.push(comment.comment_id);
-                        }else if(comment.action == "REJECT"){
-                            rejectedComment.push(comment.comment_id);
-                        }
+            project = _project
+            var labelDoc = _.find(project.documents, { fileType: 'Label' });
+            var payload = {
+                "label_filepath": labelDoc.labelCopy.location,
+                "file_id": labelDoc.id,
+                "project_id": req.body.projectId,
+                "comments": req.body.comments
+            };
+            const options = {
+                uri: PYTHON_URL_CONFLITS+"/accept",
+                method: "POST",
+                json: true,
+                body: payload,
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            };
+            console.log("CONFLICTS ACCEPT INPUT");
+            console.log(JSON.stringify(options));
+            return rp(options);
+        }).then(function (pyresponse) {
+            return Promise.props({
+                pdf: convertDocToPdf(pyresponse.label_filepath),
+                cfilePath: pyresponse.label_filepath
+            });
+        }).then(function (result) {
+            var cpath = result.cfilePath.replace(path.extname(result.cfilePath), ".pdf");
+            var label = _.find(project.documents, { fileType: 'Label' });
+            label.pdfPath = {
+                location: cpath,
+                destination: label.labelCopy.destination.replace(path.extname(label.documentName), ".pdf")
+            };
+            var comments = req.body.comments;
+            var acceptedComment = [];
+            var rejectedComment = [];
+            var orderCount = 0;
+            var fontSizeCount = 0;
+            var grammarSpellingCount = 0;
+            var orderCount = 0;
+            var contentCount = 0;
+            comments.forEach(function (comment) {
+                if (comment.action == "ACCEPT") {
+                    acceptedComment.push(comment.comment_id);
+                } else if (comment.action == "REJECT") {
+                    rejectedComment.push(comment.comment_id);
+                }
 
-                        switch (comment.conflict_type){
-                           case "FONT_SIZE" :
-                                fontSizeCount++;
-                           break;
-                           case "GRAMMAR_SPELLING" :
-                                grammarSpellingCount++;
-                           break;      
-                           case "ORDER" :
-                                orderCount++;    
-                           break;
-                           case "CONTENT" :
-                                contentCount++;    
-                           break;
-                        };
+                switch (comment.conflict_type) {
+                    case "FONT_SIZE":
+                        fontSizeCount++;
+                        break;
+                    case "FONT_NAME":
+                        fontSizeCount++;
+                        break;    
+                    case "GRAMMAR_SPELLING":
+                        grammarSpellingCount++;
+                        break;
+                    case "ORDER":
+                        orderCount++;
+                        break;
+                    case "CONTENT":
+                        contentCount++;
+                        break;
+                };
 
-                    });
-                    project.conflicts.total = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount+ contentCount);
-                       project.conflicts.types.font =  project.conflicts.types.font - fontSizeCount ;
-                       project.conflicts.types.spell_grammer =  project.conflicts.types.spell_grammer - grammarSpellingCount ;
-                       project.conflicts.types.content =  project.conflicts.types.content - contentCount;
-                       project.conflicts.types.order =  project.conflicts.types.order - orderCount;
-                        return Promise.props({
-                            accept_modified:  ConflictComment.updateMany({ "comment_id": { "$in": acceptedComment }
-                            },
-                                { "$set": { "_deleted": true,"action" :"ACCEPT" } }
-                            ),
-                            label: label.save(),
-                            project : project.save(),
-                            reject_modified:  ConflictComment.updateMany({
-                                "comment_id": { "$in": rejectedComment }
-                            },
-                                { "$set": { "_deleted": true,"action" :"REJECT" } }
-                            )
-                        })
-                        
-         
-                    // });
-                
-           
+            });
+            project.conflicts.total = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount);
+            project.conflicts.types.font = project.conflicts.types.font - fontSizeCount;
+            project.conflicts.types.spell_grammer = project.conflicts.types.spell_grammer - grammarSpellingCount;
+            project.conflicts.types.content = project.conflicts.types.content - contentCount;
+            project.conflicts.types.order = project.conflicts.types.order - orderCount;
+            return Promise.props({
+                accept_modified: ConflictComment.updateMany({
+                    "comment_id": { "$in": acceptedComment }
+                },
+                    { "$set": { "_deleted": true, "action": "ACCEPT" } }
+                ),
+                label: label.save(),
+                project: project.save(),
+                reject_modified: ConflictComment.updateMany({
+                    "comment_id": { "$in": rejectedComment }
+                },
+                    { "$set": { "_deleted": true, "action": "REJECT" } }
+                )
             })
-            .then(function (result) {
-                console.log(result.accept_modified, result.reject_modified)
-                        var audit = {
-                        user: req.body.user,
-                        project: result.project,
-                        comments: req.body.comments,
-                        actionType: "PROJECT_COMMENTS_ACK"
-                        };
-                        return Audit.create(audit);
-                        })
-            .then(function (audit) {
-                return Promise.props({ 
-                    comments : ConflictComment.find({project_id: req.body.projectId, _deleted: false}),
-                    project : ProductLabel.findById(req.body.projectId).populate('documents')
-                });
-                       
-            })
-            .then(comments_ => {
-                return res.json(
-                    responseGenerator(
+        })
+        .then(function (result) {
+            console.log(result.accept_modified, result.reject_modified)
+            var audit = {
+                user: req.body.user,
+                project: result.project,
+                comments: req.body.comments,
+                actionType: "PROJECT_COMMENTS_ACK",
+                description : {documentName :"Compare document"},
+            };
+            return Audit.create(audit);
+        })
+        .then(function (audit) {
+            return Promise.props({
+                comments: ConflictComment.find({ project_id: req.body.projectId, _deleted: false }),
+                project: ProductLabel.findById(req.body.projectId).populate('documents')
+            });
+
+        })
+        .then(comments_ => {
+            return res.json(
+                responseGenerator(
                     0,
                     "Successfully updated comments Ack",
                     comments_,
                     0
-                    ))
-                //})
-                
-            // });
-        
-   
-    })
-    .then(function (result) {
-        console.log(result.accept_modified, result.reject_modified)
-                var audit = {
-                user: req.body.user,
-                project: result.project,
-                comments: req.body.comments,
-                actionType: "PROJECT_COMMENTS_ACK"
-                };
-                return Audit.create(audit);
-                })
-    .then(function (audit) {
-        return Promise.props({ 
-            comments : ConflictComment.find({project_id: req.body.projectId, _deleted: false}),
-            project : ProductLabel.findById(req.body.projectId).populate('documents')
-        });
-               
-    })
-    .then(comments_ => {
-        return res.json(
-            responseGenerator(
-            0,
-            "Successfully updated comments Ack",
-            comments_,
-            0
-            )
-     );
-    })
-    .catch(function (err) {
-        console.log("Ack catch Err-------------------")
-        console.log(err);
-    return res.json(
-    responseGenerator(-1, "Unable to fetch the Project details", err)
-    );
-    }); 
+                )
+            );
+        })
+        .catch(function (err) {
+            return res.json(
+                responseGenerator(-1, "Unable to fetch the Project details", err)
+            );
+        }); 
  };
 
 
-    exports.getMappingSpec = function (req, res) {
-        console.log("Mapping Speic =========================================================");
-        const options = {
-            //ToDO: Update on getting the ip address
-            uri: "http://localhost:3000",
-            method: "POST",
-            json: true,
-            body: req.body,
-            headers: {
-                "Content-Type": "application/json"
-            }
-        };
-        
-        return rp(options)    
+exports.getMappingSpec = function (req, res) {
+    const options = {
+        //ToDO: Update on getting the ip address
+        uri: PYTHON_URL_MAPPING,
+        method: "POST",
+        json: true,
+        body: req.body,
+        headers: {
+            "Content-Type": "application/json"
+        }
+    };
+
+    return rp(options)
         .then(function (response) {
-            console.log("MappingSepc*************************");
-            console.log(response);
             res.send({ result: response, status: { code: 0, message: "Get all Mapping Specs" } });
         })
         .catch(function (err) {
@@ -564,16 +528,3 @@ exports.commentAck = function (req, res) {
 
     }
 
-    function generateMappingSpec(payload) {
-        const options = {
-            //ToDO: Update on getting the ip address
-            uri: "http://localhost:3000",
-            method: "POST",
-            json: true,
-            body: payload,
-            headers: {
-                "Content-Type": "application/json"
-            }
-        };
-        return rp(options);
-    }
