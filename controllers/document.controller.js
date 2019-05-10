@@ -144,6 +144,7 @@ exports.uploadFile = function (req, resp) {
         function createUUID() {
             return documentId = uuid();
         }
+        var basePath = path.resolve("./");
         var id = createUUID();
         fileUploadPath = fileUploadPath + "/" + id;
         mkdir(fileUploadPath);
@@ -160,7 +161,9 @@ exports.uploadFile = function (req, resp) {
                             var documentId = id;
                             var documentSchema = new DocumentSchema();
                             if (!oldDocuments[file[i].originalname]) {
+                                //var filePath = path.resolve(basePath,req.files[i].destination, req.files[i].filename);
                                 documentSchema.documentName = file[i].originalname;
+                                var filePath = path.resolve(basePath,req.files[i].destination, req.files[i].filename);
                                 documentSchema.mimetype = file[i].mimetype;
                                 documentSchema.destination = fileVirtualPath + "/" + documentId + "/" + file[i].originalname;
                                 documentSchema.documentid = documentId;
@@ -171,7 +174,8 @@ exports.uploadFile = function (req, resp) {
                                     location : path.resolve(basePath,req.files[i].destination, req.files[i].filename),
                                     destination : fileVirtualPath + "/" + documentId + "/" + file[i].originalname                              
                                 }
-                            } else {
+                            } 
+                            else {
                                 documentSchema = oldDocuments[file[i].originalname][0];
                                 deleteFolder(path.resolve(process.cwd(), documentSchema.location))
                             }
@@ -245,10 +249,6 @@ exports.viewDocument = function (req, res) {
 };
 
 function updateProjectLabelInfo(req, resp, document, projectId, newDocId, isNew) {
-    console.log(projectId)
-    console.log(newDocId)
-    console.log(isNew);
-
     ProductLabel.findOne({ _id: projectId }).exec(function (err, project) {
         if (err)
             resp.json(responseGenerator(-1, "File uploaded but unable to find the respective project", ""));

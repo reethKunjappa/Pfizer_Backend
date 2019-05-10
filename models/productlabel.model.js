@@ -47,7 +47,7 @@ var ProductLabelSchema = new Schema({
         default: 0
       },
     },
-      comments:[]
+     // comments:[]
       //comments: [{ type: mongoose.Schema.ObjectId, ref: ConflictCommentSchema }]
   },
   documents: [{ type: mongoose.Schema.ObjectId, ref: DocumentSchema }]

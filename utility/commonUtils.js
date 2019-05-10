@@ -1,9 +1,10 @@
 var mkdirp = require('mkdirp');
 const { getModel } = require('../models/model');
 var rimraf = require('rimraf');
+require('dotenv').config();
+const { PYTHON_URL_W2P } = require('../config/appConfig');
 
-
-var pythonConvertAPI = "http://3.90.245.202:3009/";
+//var pythonConvertAPI = "http://localhost:3009/";
 
 exports.generateId = function (preceed, model) {
     return new Promise(function (resolve, reject) {
@@ -25,7 +26,7 @@ exports.convertDocToPdf = function (path) {
     var rp = require('request-promise');
     var options = {
         method: 'POST',
-        uri: pythonConvertAPI,
+        uri: PYTHON_URL_W2P,
         body: {
             file_path: path
         },
@@ -106,3 +107,11 @@ function padDigits(number, digits) {
     return Array(Math.max(digits - String(number).length + 1, 0)).join(0) + number;
 }
 
+exports.auditReport = (user,description,project,actionType) =>{
+    return {
+        user: user,
+        description: description,
+        project: project,
+        actionType: actionType
+    }
+};
