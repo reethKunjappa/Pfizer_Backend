@@ -12,7 +12,7 @@ var dashboardController = require('../controllers/dashboard.controller');
 var favouriteController = require('../controllers/favourite.controller');
 var commentsController = require('../controllers/comments.controller');
 var checkListController = require('../controllers/checklist.controller');
-
+var preferenceController         = require('../controllers/preference.controller'); 
 //authController
 router.route('/auth/register').post(authController.new);
 router.route('/signin').post(authController.signin);
@@ -49,7 +49,10 @@ router.post('/labelling/getAllComments', commentsController.getAllComments);
 router.post("/labelling/auditHistory", documentController.auditHistory);
 //MappingSpec
 router.post('/labelling/getMappingSpec',productlabelController.getMappingSpec);
-
+//Preferences
+router.post("/labelling/preferencesCreate", preferenceController.preferencesCreate);
+router.post("/labelling/getAllPreferences", preferenceController.getAllPreferences);
+router.post("/labelling/updatePreference", preferenceController.updatePreference);
 
 //CheckList
 
