@@ -121,13 +121,10 @@ exports.reUploadFile = function (req, resp) {
         }).then(function (result) {
             resp.json(responseGenerator(0, "Successfully Uploaded", result.document));
             var audit = {
-                user: result.project.createdBy,
-                description: {
-                    oldDoc: result.oldDoc,
-                    newDoc: result.document
-                },
+                user: JSON.parse(req.query.uploadedBy),
+                description: result.oldDoc.documentName + ' (' + result.oldDoc.fileType+ ')' + ' Replaced By '+ result.document.documentName + ' ( ' + result.document.fileType +' ) Reuploaded',
                 project: result.project,
-                actionType: 'DOCUMENT_REUPLOAD',
+                actionType: 'Document Reupload',
             }
             return Audit.create(audit);
         }).catch(function (err) {
@@ -179,21 +176,15 @@ exports.uploadFile = function (req, resp) {
                                 documentSchema = oldDocuments[file[i].originalname][0];
                                 deleteFolder(path.resolve(process.cwd(), documentSchema.location))
                             }
+                            // If doc duplicated- remove old doc upload new doc and update below fileds.
                             documentSchema.location = fileUploadPath;
                             documentSchema.uploadedBy = JSON.parse(req.query.uploadedBy);
                             documentSchema.uploadedDate = new Date();
-                            // convertToImage(path.extname(documentSchema.documentName), path.resolve(documentSchema.location, documentSchema.documentName), function (err, pdfPath) {
-                            //     documentSchema.pdfPath = {
-                            //         location: pdfPath,
-                            //         destination: fileVirtualPath + "/" + documentId + "/" + path.basename(pdfPath)
-                            //     };
-                               
-                            // });
                             documentSchema.save(function (err) {
                                 if (err) {
                                     resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
                                 } else {
-                                    updateProjectLabelInfo(req, resp, documentSchema, req.query.projectId, documentSchema._id, (oldDocuments[documentSchema.documentName] === undefined));
+                                    updateProjectLabelInfo(req, resp, documentSchema, req.query.projectId, documentSchema._id, (oldDocuments[documentSchema.documentName] === undefined ));
                                 }
                             })
                         }
@@ -230,7 +221,7 @@ function checkForOldDocuments(files, reqQuery, callback) {
     var filenames = files.map(function (file) {
         return file.originalname
     })
-    DocumentSchema.find({ projectId: reqQuery.projectId, fileType: reqQuery.fileType, documentName: filenames }, function (err, documents) {
+    DocumentSchema.find({ projectId: reqQuery.projectId, fileType: reqQuery.fileType, documentName: filenames, _deleted: false }, function (err, documents) {
         callback(_.groupBy(documents, 'documentName'));
     })
 }
@@ -269,10 +260,10 @@ function updateProjectLabelInfo(req, resp, document, projectId, newDocId, isNew)
                     resp.json(responseGenerator(0, "Successfully Uploaded", document));
                     //create audit for upload doc
                     var audit = {
-                        user: request.createdBy,
-                        description: document,
+                        user: JSON.parse(req.query.uploadedBy),
+                        description: document.documentName + ' ( ' + document.fileType +' ) Uploaded',
                         project: request,
-                        actionType: 'DOCUMENT_UPLOAD',
+                        actionType: 'Upload Document',
                     }
                     return Audit.create(audit);
                 }
@@ -298,10 +289,21 @@ exports.deleteFile = function (req, res, next) {
 
         return Promise.props({
             document: result.document.save(),
-            project: result.project.save()
+            project: result.project.save(),
+            deletedDocument: DocumentSchema.findById(req.body.documentId)
+
         })
     }).then(function (result) {
-        return res.send(responseGenerator(0, 'Document deleted', req.body))
+     res.send(responseGenerator(0, 'Document deleted', req.body));
+    
+     var audit = {
+            user: req.body.deletedBy,
+            description: result.deletedDocument.documentName + ' ( ' + result.deletedDocument.fileType +' ) Deleted.',
+            project: result.project,
+            actionType: 'Delete Document',
+        }
+        return Audit.create(audit);
+        
     }).catch(function (err) {
         console.log(err);
         res.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
@@ -310,7 +312,7 @@ exports.deleteFile = function (req, res, next) {
 exports.auditHistory = function (req, res) {
     try {
         //   req.body.project._id = mongoose.Types.ObjectId(req.body.project._id)
-        Audit.find(req.body).exec(function (err, audit) {
+        Audit.find(req.body).sort({ modifiedDate: "desc" }).exec(function (err, audit) {
             if (err)
                 res.json(
                     responseGenerator(-1, "Unable to retrieve Projects list", err)
