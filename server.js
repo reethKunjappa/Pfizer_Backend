@@ -8,7 +8,16 @@ console.log(DB_URL);
 
 var port = process.env.PORT || NODE_PORT || 5555; // Setup server port
 var appConfig = require('./config/appConfig');
-app.use(appConfig.DOCUMENT_VIEW_PATH, express.static(appConfig.FS_PATH));
+
+
+app.use(function (req, res, next) {
+    req.setTimeout(0);
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Credentials", true );
+    next();
+});
+
 var bodyParser = require('body-parser');
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 }));
@@ -18,18 +27,12 @@ var config = require('./config/database');
 
 
 mongoose.Promise = global.Promise;
-mongoose.connect(DB_URL, { useNewUrlParser: true })
+mongoose.connect(DB_URL, { useNewUrlParser: true, useCreateIndex:true})
     .then(() => console.log('connection succesful'))
     .catch((err) => console.error(err));
 
 
-app.use(function (req, res, next) {
-    req.setTimeout(0);
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-});
-
+app.use(appConfig.DOCUMENT_VIEW_PATH, express.static(appConfig.FS_PATH));
 let apiRoutes = require("./routes/api-routes")
 app.use('/api', apiRoutes)
 
