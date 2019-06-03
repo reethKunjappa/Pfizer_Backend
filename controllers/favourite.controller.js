@@ -65,7 +65,8 @@ module.exports.delete = function (req, res, next) {
             var audit = {
                 user: result.user,
                 project: _project,
-                actionType: 'UNFAVOURITE',
+                actionType: 'Delete Favourite',
+                description: _project.projectName +' Deleted from Favourite List'
             }
             return Audit.create(audit);
         }).catch(function (err) {

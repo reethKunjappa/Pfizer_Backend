@@ -13,15 +13,15 @@ _id:{
     actionType:{
         type:String
     },
-    description:{
-        _id:{
-            type:Schema.Types.ObjectId,
-        },
-        documentName: String,
-        fileType:String
-    },
-    comments:{},
-},{
+    description: String,
+    comments:String,
+    modifiedDate:{
+        type:Date,
+        default: Date.now
+    }
+},
+
+{
     timestamps:true
 });
 
