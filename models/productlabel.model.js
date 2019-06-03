@@ -6,7 +6,6 @@ var ConflictCommentSchema = require("../models/conflict.model");
 var ProductLabelSchema = new Schema({
   projectName: {
     type: String,
-    unique: true,
     required: true
   },
   country: {
@@ -50,9 +49,14 @@ var ProductLabelSchema = new Schema({
      // comments:[]
       //comments: [{ type: mongoose.Schema.ObjectId, ref: ConflictCommentSchema }]
   },
+  modifiedDate:{
+      type:Date,
+      default: Date.now
+  },
   documents: [{ type: mongoose.Schema.ObjectId, ref: DocumentSchema }]
 }, {
     timestamps: true
   });
-
+// Making candidate key projName+country
+ProductLabelSchema.index({ projectName: 1, country: 1}, { unique: true });
 module.exports = mongoose.model("ProductLabel", ProductLabelSchema);

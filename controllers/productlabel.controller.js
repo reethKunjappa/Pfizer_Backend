@@ -50,8 +50,8 @@ exports.newProject = (req, res,next) => {
                 user: productLabel.createdBy,
                 project: productLabel,
                 comments : "Project created",
-                description : {documentName :"Project created"},
-                actionType: "PROJECT_CREATE"
+                description : productLabel.projectName + ' Project Created.',
+                actionType: "Create Project"
             };
             return Audit.create(audit);
         }
@@ -276,14 +276,18 @@ exports.compare = function (req, res) {
         })
         .then(function (project) {
             console.log('Total Execution time: %dms', new Date()- startTime);
-            res.send(responseGenerator(1, "Compared", project));
+            res.send(responseGenerator(0, "Compared", project));
+            var font  = project.project.conflicts.types.font == undefined ? 0:project.project.conflicts.types.font
+            var order = project.project.conflicts.types.order == undefined ? 0:project.project.conflicts.types.order
+            var content = project.project.conflicts.types.content == undefined ? 0:project.project.conflicts.types.content
+            var spell_grammer = project.project.conflicts.types.spell_grammer == undefined ? 0:project.project.conflicts.types.spell_grammer
+            var total = project.project.conflicts.total == undefined ? 0:project.project.conflicts.total
+
             var audit = {
                 user: project.project.createdBy,
                 project: project.project,
-                actionType: "COMPARE_DOCUMENT",
-                description: {
-                    documents: project.project.documents
-                }
+                actionType: "Compare Documents",
+                description: 'Total conflicts: ' +total + ', Font: ' + font+', Order: '+ order+', Content: '+content+', SpellGrammer: '+spell_grammer 
             };
             return Audit.create(audit);
         })
@@ -419,6 +423,8 @@ exports.commentAck = function (req, res) {
             var comments = req.body.comments;
             var acceptedComment = [];
             var rejectedComment = [];
+            var acceptedCommentData = [];
+            var rejectedCommentData = [];
             var orderCount = 0;
             var fontSizeCount = 0;
             var grammarSpellingCount = 0;
@@ -427,10 +433,12 @@ exports.commentAck = function (req, res) {
             comments.forEach(function (comment) {
                 if (comment.action == "ACCEPT") {
                     acceptedComment.push(comment.comment_id);
+                    acceptedCommentData.push(comment.comment_text);
                 } else if (comment.action == "REJECT") {
                     rejectedComment.push(comment.comment_id);
+                    rejectedCommentData.push(comment.comment_text);
                 }
-
+               
                 switch (comment.conflict_type) {
                     case "FONT_SIZE":
                         fontSizeCount++;
@@ -450,6 +458,10 @@ exports.commentAck = function (req, res) {
                 };
 
             });
+            console.log("After pushing into Array------------------")
+            console.log(acceptedCommentData)
+            console.log(rejectedCommentData)
+            console.log("---------------------------------------")
             project.conflicts.total = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount);
             project.conflicts.types.font = project.conflicts.types.font - fontSizeCount;
             project.conflicts.types.spell_grammer = project.conflicts.types.spell_grammer - grammarSpellingCount;
@@ -467,18 +479,47 @@ exports.commentAck = function (req, res) {
                     "comment_id": { "$in": rejectedComment }
                 },
                     { "$set": { "_deleted": true, "action": "REJECT" } }
-                )
+                ),
+                rejectedCommentData:rejectedCommentData,
+                acceptedCommentData:acceptedCommentData
+
             })
         })
         .then(function (result) {
-            console.log(result.accept_modified, result.reject_modified)
-            var audit = {
-                user: req.body.user,
-                project: result.project,
-                comments: req.body.comments,
-                actionType: "PROJECT_COMMENTS_ACK",
-                description : {documentName :"Compare document"},
-            };
+            console.log("Accept_modifed/RejectModified-------------------");
+            console.log(result.acceptedCommentData)
+            console.log(result.rejectedCommentData)
+            var audit = {};
+
+           switch (req.body.commentAction.action){
+            case 'acceptAll':
+                    audit = {
+                        user: req.body.user,
+                        project: result.project,
+                        comments: result.acceptedCommentData,
+                        actionType: "Accept All Conflicts",
+                        description : result.acceptedCommentData.length +' Comments Accepted of type ' + req.body.commentAction.type
+                    };
+                break;
+            case 'rejectAll':
+                    audit = {
+                        user: req.body.user,
+                        project: result.project,
+                        comments: result.rejectedCommentData,
+                        actionType: "Reject All Conflicts",
+                        description: result.rejectedCommentData.length +' Comments Rejected of type ' + req.body.commentAction.type
+                    };
+                break;
+            case 'accept/reject':
+                audit = {
+                    user: req.body.user,
+                    project: result.project,
+                    comments: result.acceptedCommentData.concat(result.rejectedCommentData),
+                    actionType: "Accept/Reject Conflicts",
+                    description: result.acceptedCommentData.length +' Accepted, ' + result.rejectedCommentData.length +' Rejected'
+                };
+                break;    
+           }
             return Audit.create(audit);
         })
         .then(function (audit) {
@@ -507,6 +548,7 @@ exports.commentAck = function (req, res) {
 
 
 exports.getMappingSpec = function (req, res) {
+    
     const options = {
         //ToDO: Update on getting the ip address
         uri: PYTHON_URL_MAPPING,
@@ -519,11 +561,24 @@ exports.getMappingSpec = function (req, res) {
     };
 
     return rp(options)
+        .then(function(response){
+            return Promise.props({
+                response: response,
+                project: ProductLabel.findById(req.body._id)
+            })
+        })
         .then(function (response) {
-            res.send({ result: response, status: { code: 0, message: "Get all Mapping Specs" } });
+            var audit = {
+                user: req.body.user,
+                description: 'Mapping Spec Genearted Successfully.',
+                project: response.project,
+                actionType: 'Generate Mapping Spec',
+            }
+            Audit.create(audit);
+            return res.send({ result: response.response, status: { code: 0, message: "Get all Mapping Specs" } });
         })
         .catch(function (err) {
-            res.status(400).send({ success: false, err: err.message });
+            return res.status(400).send({ success: false, err: err.message });
         });
 
     }

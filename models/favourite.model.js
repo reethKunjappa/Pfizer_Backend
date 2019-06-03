@@ -19,13 +19,15 @@ FavouriteSchema.post('save', function (doc) {
     var audit = {
         user: doc.user,
         project: doc.project,
-        actionType: 'FAVOURITE'
+        actionType: 'Mark Favourite',
+        description: doc.project+' Added in Favourite List'
     }
     project.findById(doc.project,function(err,result){
         if(err) {
             console.log(err)
         }else{
             audit.project = result;
+            audit.description = result.projectName+' Added in Favourite List'
             Audit.create(audit)
         }
     })
