@@ -1,5 +1,20 @@
-const { ProductLabel } = require('../models/model');
-const { responseGenerator } = require('../utility/commonUtils');
+const { ProductLabel, DocumentSchema, FavouriteSchema, ConflictComments } = require('../models/model');
+const { responseGenerator, inputValidator } = require('../utility/commonUtils');
+const v = require('node-input-validator');
+const bunyan = require('bunyan');
+const log = bunyan.createLogger({
+    name: 'pfizer',
+    streams: [
+      {
+        level: 'info',
+        stream: process.stdout            // log INFO and above to stdout
+      },
+      {
+        level: 'error',
+        path: './logs/error.log'  // log ERROR and above to a file
+      }
+    ]
+  });
 
 exports.getAllProjects = function (req, res) {
     try {
@@ -13,3 +28,109 @@ exports.getAllProjects = function (req, res) {
         console.log(e);
     }
 };
+
+let modalNames = [{key:"projectCount",value: ProductLabel},
+                {key:"documentsCount",value:DocumentSchema},
+                {key:"totalConflictsCount",value:ConflictComments},
+                {key:"favouritesCount",value:FavouriteSchema}
+            ];
+                
+let getModalCount= function(modal,condition){
+    return new Promise((resolve,rejected)=>{
+        modal.countDocuments(condition, (err, count) => {
+            if (err) {
+                resolve(err);
+            }
+            resolve(count);
+        })  
+    })
+}
+
+let getModalAggregation = (modal,condition)=>{
+    return new Promise((resolve,rejected)=>{
+         modal.aggregate([
+             { "$group": {
+                 "_id": condition,
+                 "count": { "$sum": 1 } 
+             }}
+         ], (err, data) => {
+             if (err) {
+                 resolve(err);
+             }
+             resolve(data);
+             
+         })
+    })
+     
+}
+exports.getCount = (req, res, next) => {
+    log.info({req: req.body}, "something about handling this request");
+    log.error({req: req.body}, "something about handling this request");
+        let responseObject = {
+            projectCount: "",
+            documentsCount: "",
+            lastUploadedDocumentDate: "",
+            favouritesCount: "",
+            totalConflictsCount: "",
+            conflictTypeCount : "",
+            documentsTypeCount : ""
+        };
+
+        try {
+            let inputValidationFields = {
+                id: 'required|integer|maxLength:5',
+            };
+            inputValidator(req.body, inputValidationFields).then((result) => {
+                if (!result.isValid) {
+                    throw result.message;
+                }
+            }).then(() => {
+                modalNames.forEach((element,index) =>{
+                    getModalCount(element.value,{}).then((count)=>{
+                        responseObject[element.key] = count
+                    }).catch((err)=>{
+                            
+                    });
+                    if(element.key == "documentsCount"||element.key == "totalConflictsCount"){
+                        console.log("Inside if",)
+                        let type = "$conflict_type";
+                        let propertyName = "conflictTypeCount"
+                        if(element.key == "documentsCount"){
+                            type = "$fileType";
+                            propertyName = "documentsTypeCount"
+                        }
+                        getModalAggregation(element.value,type).then((data)=>{
+                            responseObject[propertyName] = data;
+                        }).catch((err)=>{
+
+                        });
+                    }
+                
+                })
+
+                return DocumentSchema.find({}).sort({
+                    uploadedDate: 1
+                });
+
+            }).then((result) => {
+                responseObject.lastUploadedDocumentDate = result[0].uploadedDate;
+                res.json(responseGenerator(0, "Successfully retrieved", responseObject, ""));
+            }).catch((err) => {
+                console.log(err);
+                if (err instanceof TypeError) {
+                    console.log(err);
+                  } else {
+                    console.log(err);
+                  }
+                return res.status(400).send({
+                    success: false,
+                    err: err
+                });
+            }).finally((e) => {
+               
+            })
+        } catch (e) {
+            console.log(e);
+        }
+
+}

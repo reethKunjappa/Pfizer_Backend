@@ -58,6 +58,8 @@ router.post("/labelling/updatePreference", preferenceController.updatePreference
 
 router.post("/checkList", checkListController.getAllCheckList);
 
+router.post("/dashboard", dashboardController.getCount);
+
 // Verify JWT Jokens from REST
 function verifyToken(req, res, next) {
     var token = req.headers['authorization'];
