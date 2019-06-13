@@ -170,10 +170,12 @@ exports.compare = function (req, res) {
                             mapSpecApIPayload.ref_id = element._id;
                             refDoc = element;  //DocumentSchema.findById(coreDoc._id)
                             payload.reference_filepath.push(filePath);
+                            var cloneFilePath =  _.cloneDeep(filePath)
+                            console.log("****** CloneDeep: ", cloneFilePath)
                             //Creating Array of obj to convert to pdf
-                            if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){                               
+                             if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){                               
                                         Promise.props({
-                                            referencePdf: convertDocToPdf(filePath),
+                                            referencePdf: convertDocToPdf(cloneFilePath),
                                             reference: DocumentSchema.findById(element._id)
                                         }).then(function(result){
                                             console.log(result)
@@ -184,12 +186,12 @@ exports.compare = function (req, res) {
                                             };
                                             result.reference.save();
                                         })            
-                            }
+                            } 
                             break;
                         case "Previous Label":
-                            payload.reference_filepath.push(filePath);
+                            payload.previousLabel_filepath.push(filePath);
                             //Creating Array of obj to convert to pdf
-                             if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
+                            /*  if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
                                 docXtoPdf.push({"previousLabelDoc": filePath})
                                 Promise.props({
                                     referencePdf: convertDocToPdf(filePath),
@@ -202,7 +204,7 @@ exports.compare = function (req, res) {
                                     };
                                     result.previousLabel.save();
                                 })
-                            } 
+                            } */ 
                             break;
                         case "HA Guidelines":
                             payload.ha_filepath.push(filePath);
