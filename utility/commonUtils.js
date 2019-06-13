@@ -23,7 +23,7 @@ exports.generateId = function (preceed, model) {
 };
 
 exports.convertDocToPdf = function (path) {
-    console.log("Python convertToPDF mode*********");
+    console.log("******Node calling python convertToPDF mode*******");
     console.log("File Path: ", path)
     var rp = require('request-promise');
     var options = {

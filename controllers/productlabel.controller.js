@@ -117,6 +117,7 @@ exports.compare = function (req, res) {
     var cfilePath, cVpath;
     var coreDoc;
     var mapSpecApIPayload = {};
+    var docXtoPdf= [];
 
     return ProductLabel.findOne({ _id: req.body._id })
         .populate("documents")
@@ -167,22 +168,67 @@ exports.compare = function (req, res) {
                             break;
                         case "Reference":
                             mapSpecApIPayload.ref_id = element._id;
+                            refDoc = element;  //DocumentSchema.findById(coreDoc._id)
                             payload.reference_filepath.push(filePath);
+                            //Creating Array of obj to convert to pdf
+                            if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){                               
+                                        Promise.props({
+                                            referencePdf: convertDocToPdf(filePath),
+                                            reference: DocumentSchema.findById(element._id)
+                                        }).then(function(result){
+                                            console.log(result)
+                                            var cpath = filePath.replace(path.extname(filePath), ".pdf");
+                                            result.reference.pdfPath = {
+                                                location: cpath,
+                                                destination: cVpath.replace(path.extname(cVpath), ".pdf")
+                                            };
+                                            result.reference.save();
+                                        })            
+                            }
                             break;
                         case "Previous Label":
                             payload.reference_filepath.push(filePath);
+                            //Creating Array of obj to convert to pdf
+                             if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
+                                docXtoPdf.push({"previousLabelDoc": filePath})
+                                Promise.props({
+                                    referencePdf: convertDocToPdf(filePath),
+                                    previousLabel: DocumentSchema.findById(element._id)
+                                }).then(function(result){
+                                    var cpath = filePath.replace(path.extname(filePath), ".pdf");
+                                    result.previousLabel.pdfPath = {
+                                        location: cpath,
+                                        destination: cVpath.replace(path.extname(cVpath), ".pdf")
+                                    };
+                                    result.previousLabel.save();
+                                })
+                            } 
                             break;
                         case "HA Guidelines":
                             payload.ha_filepath.push(filePath);
+                            //Creating Array of obj to convert to pdf
+                            /* if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
+                                docXtoPdf.push({"haGuidelinesDoc": filePath})
+                            } */
                             break;
                         case "Pfizer Checklist":
                             payload.checklist_filepath.push(filePath);
+                            //Creating Array of obj to convert to pdf
+                            /* if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
+                                docXtoPdf.push({"pfizerChecklistDoc": filePath})
+                            } */
                             break;
                         case "Font Format Spec":
                             payload.fontFormat_filepath.push(filePath);
+                            //Creating Array of obj to convert to pdf
+                            /* if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
+                                docXtoPdf.push({"fontFormatSpecDoc": filePath})
+                            } */
                             break;
                     }
                 });
+
+                
                 const options = {
                     uri: PYTHON_URL_CONFLITS,
                     method: "POST",
@@ -192,7 +238,6 @@ exports.compare = function (req, res) {
                         "Content-Type": "application/json"
                     }
                 };
-
                 //create a copy of the label file
                 var srcPath = path.resolve("./", coreDoc.location, coreDoc.documentName
                 );
@@ -207,7 +252,9 @@ exports.compare = function (req, res) {
                 fs.copyFileSync(srcPath, destPath);
                 pythonStartTime = new Date();
                 console.log("Python Start Execution Time : %dms ",pythonStartTime)
+                console.log("Python Payload: ")
                 console.log(JSON.stringify(options));
+                //console.log(payload)
                 return rp(options);
             } else {
                 throw new Error();
@@ -217,7 +264,7 @@ exports.compare = function (req, res) {
             console.log("Python End Execution Time : %dms", new Date())
             console.log("Total Python Execution Time : %dms", new Date() - pythonStartTime)
             console.log("Python Conflicts result");
-            console.log(JSON.stringify(result.conflicts));
+            //console.log(JSON.stringify(result.conflicts));
             if (result.error) {
                 throw new Error(result.message);
             }
@@ -292,7 +339,7 @@ exports.compare = function (req, res) {
             return Audit.create(audit);
         })
         .catch(function (err) {
-            console.log(err);
+            //console.log(err);
             return res.status(400).send({ success: false, err: err.message });
         });
 };
