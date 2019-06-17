@@ -169,29 +169,29 @@ exports.compare = function (req, res) {
                         case "Reference":
                             mapSpecApIPayload.ref_id = element._id;
                             refDoc = element;  //DocumentSchema.findById(coreDoc._id)
-                            payload.reference_filepath.push(filePath);
-                            var cloneFilePath =  _.cloneDeep(filePath)
-                            console.log("****** CloneDeep: ", cloneFilePath)
+                            payload.reference_filepath.push(_.cloneDeep(filePath));
                             //Creating Array of obj to convert to pdf
                              if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){                               
                                         Promise.props({
-                                            referencePdf: convertDocToPdf(cloneFilePath),
+                                            referencePdf: convertDocToPdf(filePath),
                                             reference: DocumentSchema.findById(element._id)
                                         }).then(function(result){
-                                            console.log(result)
                                             var cpath = filePath.replace(path.extname(filePath), ".pdf");
                                             result.reference.pdfPath = {
                                                 location: cpath,
-                                                destination: cVpath.replace(path.extname(cVpath), ".pdf")
+                                                destination: result.reference.destination.replace(path.extname(result.reference.destination), ".pdf")
+                                                //destination: cVpath.replace(path.extname(cVpath), ".pdf")
                                             };
-                                            result.reference.save();
+                                            result.reference.save().then(function(res){
+                                                console.log("Saving pdf path to DB",res )
+                                            })
                                         })            
                             } 
                             break;
                         case "Previous Label":
-                            payload.previousLabel_filepath.push(filePath);
+                            payload.previousLabel_filepath.push(_.cloneDeep(filePath));
                             //Creating Array of obj to convert to pdf
-                            /*  if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
+                              if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
                                 docXtoPdf.push({"previousLabelDoc": filePath})
                                 Promise.props({
                                     referencePdf: convertDocToPdf(filePath),
@@ -200,11 +200,13 @@ exports.compare = function (req, res) {
                                     var cpath = filePath.replace(path.extname(filePath), ".pdf");
                                     result.previousLabel.pdfPath = {
                                         location: cpath,
-                                        destination: cVpath.replace(path.extname(cVpath), ".pdf")
+                                        destination: result.previousLabel.destination.replace(path.extname(result.previousLabel.destination), ".pdf")
                                     };
-                                    result.previousLabel.save();
+                                    result.previousLabel.save().then(function(res){
+                                        console.log("Saving pdf path to DB",res )
+                                    })
                                 })
-                            } */ 
+                            } 
                             break;
                         case "HA Guidelines":
                             payload.ha_filepath.push(filePath);
