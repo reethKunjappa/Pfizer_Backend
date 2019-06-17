@@ -35,4 +35,5 @@ FavouriteSchema.post('save', function (doc) {
 })
 
 
-module.exports = mongoose.model('Favourite', FavouriteSchema);
+//module.exports = mongoose.model('Favourite', FavouriteSchema);
+module.exports.FavouriteSchema = mongoose.model('FavouriteSchema', FavouriteSchema);

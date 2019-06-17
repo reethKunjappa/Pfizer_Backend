@@ -1,7 +1,7 @@
 let express = require('express')
 let app = express();
 require('dotenv').config();
-const { DB_URL, NODE_PORT, NODE_ENV } = require('./config/appConfig');
+const { DB_URL, NODE_PORT } = require('./config/appConfig');
 
 console.log('##########################################')
 console.log(DB_URL);
