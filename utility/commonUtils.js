@@ -3,6 +3,7 @@ const { getModel } = require('../models/model');
 var rimraf = require('rimraf');
 require('dotenv').config();
 const { PYTHON_URL_W2P } = require('../config/appConfig');
+const v = require('node-input-validator');
 
 //var pythonConvertAPI = "http://localhost:3009/";
 
@@ -116,3 +117,23 @@ exports.auditReport = (user,description,project,actionType) =>{
         actionType: actionType
     }
 };
+
+
+exports.inputValidator =  async (body,tempObj) =>{
+    let obj ={status : 200,
+        message : "",
+        isValid : true}
+    let validator = new v( body, tempObj);
+
+    let matched = await validator.check();
+ 
+    if (!matched) {
+        let obj ={status : 422,
+         message : validator.errors,
+         isValid : false}
+        return obj;
+    }
+
+    return obj;
+ 
+}
