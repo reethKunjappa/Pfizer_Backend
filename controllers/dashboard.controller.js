@@ -1,4 +1,6 @@
-const { ProductLabel, DocumentSchema, FavouriteSchema, ConflictComments } = require('../models/model');
+const { ProductLabel, DocumentSchema, ConflictComments } = require('../models/model');
+const ConflictShcema =  require('../models/conflict.model')
+const FavouriteSchema = require('../models/favourite.model')
 const { responseGenerator, inputValidator } = require('../utility/commonUtils');
 const v = require('node-input-validator');
 const bunyan = require('bunyan');
@@ -32,7 +34,8 @@ exports.getAllProjects = function (req, res) {
 let modalNames = [{key:"projectCount",value: ProductLabel},
                 {key:"documentsCount",value:DocumentSchema},
                 {key:"totalConflictsCount",value:ConflictComments},
-                {key:"favouritesCount",value:FavouriteSchema}
+                {key:"favouritesCount",value:FavouriteSchema},
+                {key:"conflict", value:ConflictShcema}
             ];
                 
 let getModalCount= function(modal,condition){
@@ -70,6 +73,7 @@ exports.getCount = (req, res, next) => {
             projectCount: "",
             documentsCount: "",
             lastUploadedDocumentDate: "",
+            lastConflictCreated:"",
             favouritesCount: "",
             totalConflictsCount: "",
             conflictTypeCount : "",
@@ -78,7 +82,7 @@ exports.getCount = (req, res, next) => {
 
         try {
             let inputValidationFields = {
-                id: 'required|integer|maxLength:5',
+                userId: 'required',
             };
             inputValidator(req.body, inputValidationFields).then((result) => {
                 if (!result.isValid) {
@@ -92,7 +96,7 @@ exports.getCount = (req, res, next) => {
                             
                     });
                     if(element.key == "documentsCount"||element.key == "totalConflictsCount"){
-                        console.log("Inside if",)
+
                         let type = "$conflict_type";
                         let propertyName = "conflictTypeCount"
                         if(element.key == "documentsCount"){
@@ -109,13 +113,20 @@ exports.getCount = (req, res, next) => {
                 })
 
                 return DocumentSchema.find({}).sort({
-                    uploadedDate: 1
+                    uploadedDate: -1
                 });
 
             }).then((result) => {
                 responseObject.lastUploadedDocumentDate = result[0].uploadedDate;
+               
+            }).then(()=>{
+                return  ConflictShcema.find({},{created_at:1,_id:0}).limit(1).sort({created_at:-1})
+            })
+            .then((result)=>{
+                responseObject.lastConflictCreated = result[0].created_at;
                 res.json(responseGenerator(0, "Successfully retrieved", responseObject, ""));
-            }).catch((err) => {
+            })
+            .catch((err) => {
                 console.log(err);
                 if (err instanceof TypeError) {
                     console.log(err);
