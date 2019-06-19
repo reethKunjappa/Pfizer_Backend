@@ -4,3 +4,5 @@ mochawesome-report/
 uploads/
 fs/
 .vscode/
+.env
+logs/
