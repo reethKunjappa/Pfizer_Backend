@@ -117,8 +117,6 @@ exports.compare = function (req, res) {
     var cfilePath, cVpath;
     var coreDoc;
     var mapSpecApIPayload = {};
-    var docXtoPdf= [];
-
     return ProductLabel.findOne({ _id: req.body._id })
         .populate("documents")
         .then(function (_project) {
@@ -170,7 +168,6 @@ exports.compare = function (req, res) {
                             mapSpecApIPayload.ref_id = element._id;
                             refDoc = element;  //DocumentSchema.findById(coreDoc._id)
                             payload.reference_filepath.push(_.cloneDeep(filePath));
-                            //Creating Array of obj to convert to pdf
                              if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){                               
                                         Promise.props({
                                             referencePdf: convertDocToPdf(filePath),
@@ -190,9 +187,7 @@ exports.compare = function (req, res) {
                             break;
                         case "Previous Label":
                             payload.previousLabel_filepath.push(_.cloneDeep(filePath));
-                            //Creating Array of obj to convert to pdf
                               if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
-                                docXtoPdf.push({"previousLabelDoc": filePath})
                                 Promise.props({
                                     referencePdf: convertDocToPdf(filePath),
                                     previousLabel: DocumentSchema.findById(element._id)
@@ -210,24 +205,12 @@ exports.compare = function (req, res) {
                             break;
                         case "HA Guidelines":
                             payload.ha_filepath.push(filePath);
-                            //Creating Array of obj to convert to pdf
-                            /* if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
-                                docXtoPdf.push({"haGuidelinesDoc": filePath})
-                            } */
                             break;
                         case "Pfizer Checklist":
                             payload.checklist_filepath.push(filePath);
-                            //Creating Array of obj to convert to pdf
-                            /* if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
-                                docXtoPdf.push({"pfizerChecklistDoc": filePath})
-                            } */
                             break;
                         case "Font Format Spec":
                             payload.fontFormat_filepath.push(filePath);
-                            //Creating Array of obj to convert to pdf
-                            /* if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
-                                docXtoPdf.push({"fontFormatSpecDoc": filePath})
-                            } */
                             break;
                     }
                 });
