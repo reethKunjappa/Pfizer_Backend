@@ -158,9 +158,7 @@ exports.uploadFile = function (req, resp) {
                             var documentId = id;
                             var documentSchema = new DocumentSchema();
                             if (!oldDocuments[file[i].originalname]) {
-                                //var filePath = path.resolve(basePath,req.files[i].destination, req.files[i].filename);
                                 documentSchema.documentName = file[i].originalname;
-                                var filePath = path.resolve(basePath,req.files[i].destination, req.files[i].filename);
                                 documentSchema.mimetype = file[i].mimetype;
                                 documentSchema.destination = fileVirtualPath + "/" + documentId + "/" + file[i].originalname;
                                 documentSchema.documentid = documentId;

@@ -14,6 +14,7 @@ const { PYTHON_URL_CONFLITS, PYTHON_URL_MAPPING , logMessage } = require('../con
 var _ = require("lodash");
 require("mongoose").set("debug", true);
 var _compareAPICallCount=false;
+var currentProjName=null;
 exports.newProject = (req, res,next) => {
     const { projectName, country, createdBy } = req.body
     var productLabel = new ProductLabel();
@@ -152,7 +153,7 @@ exports.compare = function (req, res) {
     return res.json(
         responseGenerator(
             -1,
-            "Server is  busy, Please try after some time!"
+             "Currently serving:  " + currentProjName +" ,  request, Please try after some time!"
         )
     );
   
@@ -184,6 +185,7 @@ exports.compare = function (req, res) {
                 project.documents != null &&
                 project.documents.length > 0
             ) {
+                currentProjName = project.projectName;
                 var payload = {
                     label_filepath: "",
                     ha_filepath: [],
@@ -231,7 +233,7 @@ exports.compare = function (req, res) {
                         case "Previous Label": 
                             payload.previousLabel_filepath.push(_.cloneDeep(filePath));
                               if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
-                               documentConversation(filePath,element); 
+                               //documentConversation(filePath,element); 
                             }  
                             break;
                         case "HA Guidelines":
