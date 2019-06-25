@@ -1,25 +1,13 @@
 const { ProductLabel, DocumentSchema, ConflictComments } = require('../models/model');
 const ConflictShcema =  require('../models/conflict.model')
 const FavouriteSchema = require('../models/favourite.model')
-const { responseGenerator, inputValidator } = require('../utility/commonUtils');
+const { responseGenerator, inputValidator, log } = require('../utility/commonUtils');
 const v = require('node-input-validator');
-const bunyan = require('bunyan');
-const log = bunyan.createLogger({
-    name: 'pfizer',
-    streams: [
-      {
-        level: 'info',
-        stream: process.stdout            // log INFO and above to stdout
-      },
-      {
-        level: 'error',
-        path: './logs/error.log'  // log ERROR and above to a file
-      }
-    ]
-  });
+
 
 exports.getAllProjects = function (req, res) {
     try {
+        log.info("Get all projects api called");
         ProductLabel.find({}).exec(function (err, projects) {
             if (err)
                 res.json(responseGenerator(-1, "Unable to retrieve Projects list", err));
@@ -67,8 +55,8 @@ let getModalAggregation = (modal,condition)=>{
      
 }
 exports.getCount = (req, res, next) => {
-    log.info({req: req.body}, "something about handling this request");
-    log.error({req: req.body}, "something about handling this request");
+    log.info({req: req.body}, "dashboard function called");
+    
         let responseObject = {
             projectCount: "",
             documentsCount: "",

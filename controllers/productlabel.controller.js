@@ -1,25 +1,21 @@
-var jwt = require("jsonwebtoken");
-var config = require("../config/database");
+var jwt = require("jsonwebtoken"); //for future purpose
 const { ProductLabel, DocumentSchema } = require("../models/model");
 var FavouriteSchema = require("../models/favourite.model");
-var mappingSpecScema = require("../models/mappingspec.model");
 var ConflictComment = require("../models/conflict.model");
 var Audit = require("../models/audit.model");
-var { mkdir, convertDocToPdf, responseGenerator } = require("../utility/commonUtils");
+var {convertDocToPdf, responseGenerator, log, inputValidator} = require("../utility/commonUtils");
 var Promise = require("bluebird");
 var path = require("path");
 var rp = require("request-promise");
 var fs = require("fs");
 var uuid = require("uuid-v4");
 const appConfig = require("../config/appConfig");
-const { PYTHON_URL_CONFLITS, PYTHON_URL_MAPPING } = require('../config/appConfig');
+const { PYTHON_URL_CONFLITS, PYTHON_URL_MAPPING , logMessage } = require('../config/appConfig');
 var _ = require("lodash");
 require("mongoose").set("debug", true);
-
-var utility = require("./../utility/convert");
-
+var _compareAPICallCount=false;
 exports.newProject = (req, res,next) => {
-    const { projectName, country, createdBy, ownerName } = req.body
+    const { projectName, country, createdBy } = req.body
     var productLabel = new ProductLabel();
     var conflicts = {
         total: 0,
@@ -33,80 +29,133 @@ exports.newProject = (req, res,next) => {
     productLabel.projectName = projectName;
     productLabel.country = country;
     productLabel.createdBy = createdBy;
-    productLabel.ownerName = ownerName;
     productLabel.createdOn = new Date();
     //As per UI requirement(Shashank) inserting static conflicts and favorite
     productLabel.conflicts = conflicts;
     productLabel.favorite = 0;
-    if(projectName && country && createdBy){
-    productLabel.save( (err) => {
-        if (err) res.json(responseGenerator(-1, "Project already exists.", err));
-        else {
-            res.json(
-                responseGenerator(0, "Project created Successfully", productLabel)
-            );
-            //create audit for new project
-            var audit = {
-                user: productLabel.createdBy,
-                project: productLabel,
-                comments : "Project created",
-                description : productLabel.projectName + ' Project Created.',
-                actionType: "Create Project"
-            };
-            return Audit.create(audit);
+   try {
+       
+    let inputValidationFields = {
+        projectName: 'required',
+        country: 'required',
+        createdBy: 'required'
+    };
+    inputValidator(req.body, inputValidationFields).then((result) => {
+        if (!result.isValid) {
+            throw result.message;
         }
-    });
-}else{
+    }).then(() => {
+        productLabel.save( (err) => {
+            if (err) res.json(responseGenerator(-1, "Project already exists.", err));
+            else {
+                res.json(
+                    responseGenerator(0, "Project created Successfully", productLabel)
+                );
+                //create audit for new project
+                var audit = {
+                    user: productLabel.createdBy,
+                    project: productLabel,
+                    comments : "Project created",
+                    description : productLabel.projectName + ' Project Created.',
+                    actionType: "Create Project"
+                };
+                return Audit.create(audit);
+            }
+        });
+    }).catch((err)=>{
+        log.error({err:err},logMessage.validatationerror);
         res.json(responseGenerator(-1, "Mandatory fields Missed", ""));
-}
+    })
+   } catch (err) {  
+    log.error({err:err},logMessage.unhandlederror);
+    res.json(responseGenerator(-1,"Something went wrong"));
+   }
+
 };
 
 exports.getProjects = function (req, res) {
     try {
+        log.info({req:req.body.user},"Get all projects");
         ProductLabel.find({}, { "conflicts.comments": 0 })
             .lean()
             .sort({ modifiedDate: "desc" })
             .exec(function (err, projects) {
-                if (err)
-                    res.json(
-                        responseGenerator(-1, "Unable to retrieve Projects list", err)
-                    );
+                if (err){
+                    log.error({err:err},logMessage.dberror)
+                    res.json(responseGenerator(-1, "Unable to retrieve Projects list", err));    
+                }
                 else {
                     getUserFav(req, res, projects);
                     //res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
                 }
             });
-    } catch (e) {
-        console.log(e);
+    } catch (err) {
+        log.error({err:err},logMessage.unhandlederror);
+        res.json(responseGenerator(-1,"Something went wrong"));
     }
 };
 
 exports.viewProject = function (req, res) {
     try {
-        ProductLabel.findOne({ _id: req.body._id }, { "conflicts.comments": 0 })
+        let inputValidationFields = {
+            _id: 'required',
+        };
+        inputValidator(req.body, inputValidationFields).then((result) => {
+            if (!result.isValid) {
+                throw result.message;
+            }
+        }).then(() => {
+            ProductLabel.findOne({ _id: req.body._id }, { "conflicts.comments": 0 })
             .populate("documents")
             .exec(function (err, project) {
-                if (err)
-                    res.json(
-                        responseGenerator(-1, "Unable to fetch the Project details", err)
-                    );
-                else
-                    res.json(
-                        responseGenerator(
-                            0,
-                            "Successfully retrieved Project details",
-                            project,
-                            0
-                        )
-                    );
+                if (err){
+                    log.error({err:err},logMessage.dberror);
+                    res.json(responseGenerator(-1, "Unable to fetch the Project details", err));      
+                } else{
+                    res.json(responseGenerator(0,"Successfully retrieved Project details",project,0));
+                }    
             });
-    } catch (e) {
-        console.log(e);
+        }).catch((err)=>{
+            log.error({err:err},logMessage.validatationerror);
+            res.json(responseGenerator(-1,err.message));
+        })
+    } catch (err) {
+        log.error({err:err},logMessage.unhandlederror);
+        res.json(responseGenerator(-1,"Something went wrong"));
     }
 };
+
+let documentConversation = (filePath,element)=>{
+    Promise.props({           
+        referencePdf: convertDocToPdf(_.cloneDeep(filePath)),
+        reference: DocumentSchema.findById(element._id)
+    }).then((result)=>{
+        if(typeof(result)=='string'){
+            throw new Error(result);
+        }
+        var cpath = filePath.replace(path.extname(filePath), ".pdf");
+        result.reference.pdfPath = {
+            location: cpath,
+            destination: result.reference.destination.replace(path.extname(result.reference.destination), ".pdf")
+        };
+        return result.reference.save()
+    }).catch((err)=>{
+        log.error({err:err},"Something is went wrong");
+    })  
+};
+
 var startTime = new Date();
 var pythonStartTime = new Date();
 exports.compare = function (req, res) {
+    log.info({req:req.body},"Conflict/Compare called");
+    if(_compareAPICallCount)
+    return res.json(
+        responseGenerator(
+            -1,
+            "Server is  busy, Please try after some time!"
+        )
+    );
+  
     startTime = new Date();
     var project = {};
     var conflictDoc = {
@@ -117,8 +166,17 @@ exports.compare = function (req, res) {
     var cfilePath, cVpath;
     var coreDoc;
     var mapSpecApIPayload = {};
-    return ProductLabel.findOne({ _id: req.body._id })
-        .populate("documents")
+    let inputValidationFields = {
+        _id: 'required',
+    };
+    inputValidator(req.body, inputValidationFields).then((result) => {
+        if (!result.isValid) {
+            throw result.message;
+        }
+    }).then(()=>{
+        _compareAPICallCount=true;       
+        ProductLabel.findOne({ _id: req.body._id })
+        .populate("documents")       
         .then(function (_project) {
             project = _project;
             if (
@@ -151,7 +209,6 @@ exports.compare = function (req, res) {
                             var id = uuid();
                             payload.file_id = element._id;
                             conflictDoc.documentId = id;
-
                             conflictDoc.fileType = "CONFLICT";
                             conflictDoc.destination =
                                 fileVirtualPath + "/" + id + "/" + element.documentName;
@@ -166,42 +223,16 @@ exports.compare = function (req, res) {
                             break;
                         case "Reference":
                             mapSpecApIPayload.ref_id = element._id;
-                            refDoc = element;  //DocumentSchema.findById(coreDoc._id)
-                            payload.reference_filepath.push(_.cloneDeep(filePath));
+                             payload.reference_filepath.push(_.cloneDeep(filePath));
                              if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){                               
-                                        Promise.props({
-                                            referencePdf: convertDocToPdf(filePath),
-                                            reference: DocumentSchema.findById(element._id)
-                                        }).then(function(result){
-                                            var cpath = filePath.replace(path.extname(filePath), ".pdf");
-                                            result.reference.pdfPath = {
-                                                location: cpath,
-                                                destination: result.reference.destination.replace(path.extname(result.reference.destination), ".pdf")
-                                                //destination: cVpath.replace(path.extname(cVpath), ".pdf")
-                                            };
-                                            result.reference.save().then(function(res){
-                                                console.log("Saving pdf path to DB",res )
-                                            })
-                                        })            
+                                documentConversation(filePath,element);                  
                             } 
                             break;
-                        case "Previous Label":
+                        case "Previous Label": 
                             payload.previousLabel_filepath.push(_.cloneDeep(filePath));
                               if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
-                                Promise.props({
-                                    referencePdf: convertDocToPdf(filePath),
-                                    previousLabel: DocumentSchema.findById(element._id)
-                                }).then(function(result){
-                                    var cpath = filePath.replace(path.extname(filePath), ".pdf");
-                                    result.previousLabel.pdfPath = {
-                                        location: cpath,
-                                        destination: result.previousLabel.destination.replace(path.extname(result.previousLabel.destination), ".pdf")
-                                    };
-                                    result.previousLabel.save().then(function(res){
-                                        console.log("Saving pdf path to DB",res )
-                                    })
-                                })
-                            } 
+                               documentConversation(filePath,element); 
+                            }  
                             break;
                         case "HA Guidelines":
                             payload.ha_filepath.push(filePath);
@@ -246,6 +277,7 @@ exports.compare = function (req, res) {
             } else {
                 throw new Error();
             }
+       // })
         })
         .then(function (result) {
             console.log("Python End Execution Time : %dms", new Date())
@@ -253,6 +285,7 @@ exports.compare = function (req, res) {
             console.log("Python Conflicts result");
             //console.log(JSON.stringify(result.conflicts));
             if (result.error) {
+                log.error({err:result.err},"Python conflict api response")
                 throw new Error(result.message);
             }
 
@@ -311,11 +344,13 @@ exports.compare = function (req, res) {
         .then(function (project) {
             console.log('Total Execution time: %dms', new Date()- startTime);
             res.send(responseGenerator(0, "Compared", project));
-            var font  = project.project.conflicts.types.font == undefined ? 0:project.project.conflicts.types.font
-            var order = project.project.conflicts.types.order == undefined ? 0:project.project.conflicts.types.order
-            var content = project.project.conflicts.types.content == undefined ? 0:project.project.conflicts.types.content
-            var spell_grammer = project.project.conflicts.types.spell_grammer == undefined ? 0:project.project.conflicts.types.spell_grammer
-            var total = project.project.conflicts.total == undefined ? 0:project.project.conflicts.total
+            _compareAPICallCount=false;
+            let apath = project.project.conflicts;
+            let font  = apath.types.font == undefined ? 0:apath.types.font
+            let order = apath.types.order == undefined ? 0:apath.types.order
+            let content = apath.types.content == undefined ? 0:apath.types.content
+            let spell_grammer = apath.types.spell_grammer == undefined ? 0:apath.types.spell_grammer
+            let total = apath.total == undefined ? 0:apath.total
 
             var audit = {
                 user: project.project.createdBy,
@@ -323,12 +358,32 @@ exports.compare = function (req, res) {
                 actionType: "Compare Documents",
                 description: 'Total conflicts: ' +total + ', Font: ' + font+', Order: '+ order+', Content: '+content+', SpellGrammer: '+spell_grammer 
             };
+            log.info({req:req.body},"Conflict/Compare ended");
             return Audit.create(audit);
+            
         })
         .catch(function (err) {
-            //console.log(err);
-            return res.status(400).send({ success: false, err: err.message });
+             log.error({err:err},logMessage.unhandlederror);
+            _compareAPICallCount=false;
+            return res.json(
+                responseGenerator(
+                    -1,
+                    err.message
+                )
+            );
+            
         });
+    }).catch((err)=>{
+        _compareAPICallCount=false;
+        //log.err({err:result.err},"Python conflict api response")
+        console.log("Error",err);
+        res.json(
+            responseGenerator(
+                -1,
+                err.id.message
+            )
+        );
+    }); 
 };
 exports.updateProject = function (req, res) {
     var productLabel = new ProductLabel(req.body);
@@ -383,42 +438,61 @@ function getUserFav(req, res, projects) {
                     );
                 }
             });
-    } catch (e) {
-        console.log(e);
+    } catch (err) { 
+        log.error({err:err},logMessage.unhandlederror);
+        res.json(responseGenerator(-1,"Something went wrong"));
     }
 }
 
 exports.viewConflictProject = function (req, res) {
     var response = {};
     try {
-        ProductLabel.findOne({ _id: req.body._id })
+        let inputValidationFields = {
+            _id: 'required',
+        };
+        inputValidator(req.body, inputValidationFields).then((result) => {
+            if (!result.isValid) {
+                throw result.message;
+            }
+        }).then(() => {
+            ProductLabel.findOne({ _id: req.body._id })
             .populate("documents")
             .exec(function (err, project) {
                 response.project = project;
                 ConflictComment.find({ project_id: req.body._id, _deleted: false }, function (err, comments) {
                     response.comments = comments;
-                    if (err)
-                        res.json(
-                            responseGenerator(-1, "Unable to fetch the Project details", err)
-                        );
-                    else
-                        res.json(
-                            responseGenerator(
-                                0,
-                                "Successfully retrieved Project details",
-                                response,
-                                0
-                            )
-                        );
+                    if (err){
+                        log.error({err:err},logMessage.dberror);
+                        res.json(responseGenerator(-1, "Unable to fetch the Project details", err));
+                    }    
+                    else{
+                        res.json(responseGenerator(0,"Successfully retrieved Project details",response,0));
+                    }                                                                 
                 })
             });
-    } catch (e) {
-        console.log(e);
+        }).catch((err)=>{
+            log.error({err:err},logMessage.validatationerror);
+            res.json(responseGenerator(-1,err.message));
+        })
+
+    } catch (err) {
+        log.error({err:err},logMessage.unhandlederror);
+        res.json(responseGenerator(-1,"Something went wrong"));
     }
 };
 
 exports.commentAck = function (req, res) {
     var project, pythonComments = [];
+    try {
+        
+        let inputValidationFields = {
+            projectId: 'required',
+        };
+        inputValidator(req.body, inputValidationFields).then((result) => {
+            if (!result.isValid) {
+                throw result.message;
+            }
+        }).then(() => {
     ProductLabel.findById(req.body.projectId).populate('documents')
         .then(function (_project) {
 
@@ -574,10 +648,18 @@ exports.commentAck = function (req, res) {
             );
         })
         .catch(function (err) {
-            return res.json(
-                responseGenerator(-1, "Unable to fetch the Project details", err)
-            );
-        }); 
+            log.error({err:err},logMessage.unhandlederror);
+            return res.json(responseGenerator(-1, "Unable to fetch the Project details", err));
+                
+      });
+    }).catch((err)=>{
+        log.error({err:err},logMessage.validatationerror);
+        res.json(responseGenerator(-1,err.message));
+        })
+    } catch (err) {
+        log.error({err:err},logMessage.unhandlederror);
+        res.json(responseGenerator(-1,"Something went wrong"));
+    } 
  };
 
 
@@ -593,27 +675,45 @@ exports.getMappingSpec = function (req, res) {
             "Content-Type": "application/json"
         }
     };
-
-    return rp(options)
-        .then(function(response){
-            return Promise.props({
-                response: response,
-                project: ProductLabel.findById(req.body._id)
-            })
-        })
-        .then(function (response) {
-            var audit = {
-                user: req.body.user,
-                description: 'Mapping Spec Genearted Successfully.',
-                project: response.project,
-                actionType: 'Generate Mapping Spec',
+    try {
+       
+        let inputValidationFields = {
+            label_filepath: 'required',
+        };
+        inputValidator(req.body, inputValidationFields).then((result) => {
+            if (!result.isValid) {
+                throw result.message;
             }
-            Audit.create(audit);
-            return res.send({ result: response.response, status: { code: 0, message: "Get all Mapping Specs" } });
-        })
-        .catch(function (err) {
-            return res.status(400).send({ success: false, err: err.message });
-        });
+        }).then(() => {            
+            return rp(options).then(function(response){
+                return Promise.props({
+                    response: response,
+                    project: ProductLabel.findById(req.body._id)
+                })
+            })
+            .then(function (response) {
+                var audit = {
+                    user: req.body.user,
+                    description: 'Mapping Spec Genearted Successfully.',
+                    project: response.project,
+                    actionType: 'Generate Mapping Spec',
+                }
+                Audit.create(audit);
+                return res.send({ result: response.response, status: { code: 0, message: "Get all Mapping Specs" } });
+            })
+            .catch(function (err) {
+                log.error({err:err},logMessage.unhandlederror);
+                res.json(responseGenerator(-1,"Something went wrong! Try again"));
+            });
+
+        }).catch((err)=>{
+        log.error({err:err},logMessage.validatationerror);
+        res.json(responseGenerator(-1,err.message));
+        }) 
+    } catch (err) {
+        log.error({err:err},logMessage.unhandlederror);
+        res.json(responseGenerator(-1,"Something went wrong"));
+    }
 
     }
 

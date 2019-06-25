@@ -137,3 +137,25 @@ exports.inputValidator =  async (body,tempObj) =>{
     return obj;
  
 }
+
+const bunyan = require('bunyan');
+exports.log = bunyan.createLogger({
+    name: 'pfizer',
+    serializers: {err: bunyan.stdSerializers.err,req: bunyan.stdSerializers.req},
+    streams: [
+      {
+        level: 'info',
+        type: 'rotating-file',
+        path: './logs/info.log',            // log INFO and above to a file
+        period: '1d',   // daily rotation
+        count: 3        // keep 3 back copies
+      },
+      {
+        level: 'error',
+        type: 'rotating-file',
+        path: './logs/error.log',  // log ERROR and above to a file
+        period: '1d',   // daily rotation
+        count: 3        // keep 3 back copies
+      }
+    ]
+  });
