@@ -20,19 +20,19 @@ exports.newProject = (req, res,next) => {
     var productLabel = new ProductLabel();
     var conflicts = {
         total: 0,
-        types: {
+        /* types: {
             font: 0,
             content: 0,
             order: 0
-        },
-        comments: []
-    };
+        } , */
+
+    }; //
     productLabel.projectName = projectName;
     productLabel.country = country;
     productLabel.createdBy = createdBy;
     productLabel.createdOn = new Date();
     //As per UI requirement(Shashank) inserting static conflicts and favorite
-    productLabel.conflicts = conflicts;
+    //productLabel.conflicts = conflicts;
     productLabel.favorite = 0;
    try {
        
@@ -227,7 +227,7 @@ exports.compare = function (req, res) {
                             mapSpecApIPayload.ref_id = element._id;
                              payload.reference_filepath.push(_.cloneDeep(filePath));
                              if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){                               
-                                documentConversation(filePath,element);                  
+                                //documentConversation(filePath,element);                  
                             } 
                             break;
                         case "Previous Label": 
@@ -292,8 +292,8 @@ exports.compare = function (req, res) {
             }
 
             cfilePath = result.filepath;
-            project.conflicts = result.conflicts;
-            project.conflicts.types = result.conflicts.conflict_type;
+            project.conflicts = result.conflicts; //Total conflict count
+            project.conflicts.types = result.conflicts.types; // Each conflict count 
             project.conflicted = true;
             var project_id = req.body._id;
 
@@ -348,17 +348,16 @@ exports.compare = function (req, res) {
             res.send(responseGenerator(0, "Compared", project));
             _compareAPICallCount=false;
             let apath = project.project.conflicts;
-            let font  = apath.types.font == undefined ? 0:apath.types.font
-            let order = apath.types.order == undefined ? 0:apath.types.order
-            let content = apath.types.content == undefined ? 0:apath.types.content
-            let spell_grammer = apath.types.spell_grammer == undefined ? 0:apath.types.spell_grammer
+            var auditData= [];
+            apath.types.forEach(function(data){
+                auditData.push(data.key+':'+data.value)
+            })
             let total = apath.total == undefined ? 0:apath.total
-
             var audit = {
                 user: project.project.createdBy,
                 project: project.project,
                 actionType: "Compare Documents",
-                description: 'Total conflicts: ' +total + ', Font: ' + font+', Order: '+ order+', Content: '+content+', SpellGrammer: '+spell_grammer 
+                description: 'Total conflicts: ' +total + ', '+ auditData.toString()
             };
             log.info({req:req.body},"Conflict/Compare ended");
             return Audit.create(audit);
@@ -495,7 +494,7 @@ exports.commentAck = function (req, res) {
                 throw result.message;
             }
         }).then(() => {
-    ProductLabel.findById(req.body.projectId).populate('documents')
+    ProductLabel.findOne({_id : req.body.projectId}).populate('documents')
         .then(function (_project) {
 
             project = _project
@@ -555,7 +554,10 @@ exports.commentAck = function (req, res) {
                         break;
                     case "FONT_NAME":
                         fontSizeCount++;
-                        break;    
+                        break;  
+                    case "FONT_COLOUR":
+                        fontSizeCount++;
+                        break;        
                     case "GRAMMAR_SPELLING":
                         grammarSpellingCount++;
                         break;
@@ -573,10 +575,38 @@ exports.commentAck = function (req, res) {
             console.log(rejectedCommentData)
             console.log("---------------------------------------")
             project.conflicts.total = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount);
-            project.conflicts.types.font = project.conflicts.types.font - fontSizeCount;
-            project.conflicts.types.spell_grammer = project.conflicts.types.spell_grammer - grammarSpellingCount;
-            project.conflicts.types.content = project.conflicts.types.content - contentCount;
-            project.conflicts.types.order = project.conflicts.types.order - orderCount;
+        
+            var updatedConflictTypes=[];
+            //project.conflicts.types = [];
+            let fontObj =_.find(project.conflicts.types,['key','font']);
+            let fontIndex = project.conflicts.types.indexOf(fontObj)
+            project.conflicts.types[fontIndex].value-= fontSizeCount;
+            let fontUpdatedObj = project.conflicts.types[fontIndex];
+
+                        
+            let fontspellGrammerObj =_.find(project.conflicts.types,['key','spell']);
+            let fontspellGrammerIndex = project.conflicts.types.indexOf(fontspellGrammerObj)
+            project.conflicts.types[fontspellGrammerIndex].value-= grammarSpellingCount;
+            let spellUpdatedObj = project.conflicts.types[fontspellGrammerIndex];
+           
+            let contentObj =_.find(project.conflicts.types,['key','content']);
+            let contentIndex = project.conflicts.types.indexOf(contentObj)
+            project.conflicts.types[contentIndex].value-= contentCount;
+            let contentUpdatedObj = project.conflicts.types[contentIndex];
+           
+    
+
+            let orderObj =_.find(project.conflicts.types,['key','order']); 
+            let orderIndex = project.conflicts.types.indexOf(orderObj)
+            project.conflicts.types[orderIndex].value-= orderCount;
+            let orderUpdatedObj = project.conflicts.types[orderIndex];
+
+
+            updatedConflictTypes.push(fontUpdatedObj,spellUpdatedObj,contentUpdatedObj,orderUpdatedObj)
+            console.log("updatedConflictTypes-----------------------")
+            console.log(updatedConflictTypes)
+            project.conflicts.types = updatedConflictTypes;
+            
             return Promise.props({
                 accept_modified: ConflictComment.updateMany({
                     "comment_id": { "$in": acceptedComment }
@@ -584,7 +614,14 @@ exports.commentAck = function (req, res) {
                     { "$set": { "_deleted": true, "action": "ACCEPT" } }
                 ),
                 label: label.save(),
-                project: project.save(),
+                project: ProductLabel.updateOne({_id:req.body.projectId},{$set:{'conflicts.types': updatedConflictTypes,
+            
+                "conflicts.total" : project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount)   }}, function(err, data){
+                    if(err){
+                        console.log("1==========================",err)
+                    }
+                    console.log("2==============================",data)
+                }),
                 reject_modified: ConflictComment.updateMany({
                     "comment_id": { "$in": rejectedComment }
                 },
@@ -718,4 +755,5 @@ exports.getMappingSpec = function (req, res) {
     }
 
     }
+
 

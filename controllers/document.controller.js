@@ -165,10 +165,12 @@ exports.uploadFile = function (req, resp) {
                                 documentSchema.projectId = req.query.projectId;
                                 documentSchema.fileType = req.query.fileType;
                                 documentSchema.version = "0.1";
-                                documentSchema.pdfPath = {
+                                  documentSchema.pdfPath = {
                                     location : path.resolve(basePath,req.files[i].destination, req.files[i].filename),
-                                    destination : fileVirtualPath + "/" + documentId + "/" + file[i].originalname                              
-                                }
+                                    destination : fileVirtualPath + "/" + documentId + "/" + file[i].originalname.replace(path.extname(file[i].originalname), ".pdf")
+                                    
+                                    
+                                }  
                             } 
                             else {
                                 documentSchema = oldDocuments[file[i].originalname][0];
@@ -178,6 +180,13 @@ exports.uploadFile = function (req, resp) {
                             documentSchema.location = fileUploadPath;
                             documentSchema.uploadedBy = JSON.parse(req.query.uploadedBy);
                             documentSchema.uploadedDate = new Date();
+                            /* convertToImagePromise(path.extname(documentSchema.documentName), path.resolve(documentSchema.location, documentSchema.documentName), function (err, pdfPath) {
+                                 documentSchema.pdfPath = {
+                                     location: pdfPath,
+                                     destination: fileVirtualPath + "/" + documentId + "/" + path.basename(pdfPath)
+                                 };
+                               
+                             }); */
                             documentSchema.save(function (err) {
                                 if (err) {
                                     resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));

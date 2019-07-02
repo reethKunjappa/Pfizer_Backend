@@ -28,26 +28,8 @@ var ProductLabelSchema = new Schema({
       type: Number,
       default: 0
     },
-    types: {
-      font: {
-        type: Number,
-        default: 0
-      },
-      order: {
-        type: Number,
-        default: 0
-      },
-      content: {
-        type: Number,
-        default: 0
-      },
-      spell_grammar: {
-        type: Number,
-        default: 0
-      },
-    },
-     // comments:[]
-      //comments: [{ type: mongoose.Schema.ObjectId, ref: ConflictCommentSchema }]
+    types:[],
+  
   },
   modifiedDate:{
       type:Date,
