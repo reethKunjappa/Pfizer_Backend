@@ -77,7 +77,7 @@ exports.newProject = (req, res,next) => {
 exports.getProjects = function (req, res) {
     try {
         log.info({req:req.body.user},"Get all projects");
-        ProductLabel.find({}, { "conflicts.comments": 0 })
+        ProductLabel.find({createdBy:req.body.user}, { "conflicts.comments": 0 })
             .lean()
             .sort({ modifiedDate: "desc" })
             .exec(function (err, projects) {
