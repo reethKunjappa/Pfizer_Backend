@@ -539,6 +539,7 @@ exports.commentAck = function (req, res) {
             var grammarSpellingCount = 0;
             var orderCount = 0;
             var contentCount = 0;
+            let totalConflictCount =0 ;
             comments.forEach(function (comment) {
                 if (comment.action == "ACCEPT") {
                     acceptedComment.push(comment.comment_id);
@@ -574,7 +575,7 @@ exports.commentAck = function (req, res) {
             console.log(acceptedCommentData)
             console.log(rejectedCommentData)
             console.log("---------------------------------------")
-           let totalConflictCount = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount);
+           totalConflictCount = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount);
         
             var updatedConflictTypes=[];
             //project.conflicts.types = [];
