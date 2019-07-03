@@ -574,7 +574,7 @@ exports.commentAck = function (req, res) {
             console.log(acceptedCommentData)
             console.log(rejectedCommentData)
             console.log("---------------------------------------")
-            project.conflicts.total = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount);
+           let totalConflictCount = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount);
         
             var updatedConflictTypes=[];
             //project.conflicts.types = [];
@@ -608,29 +608,40 @@ exports.commentAck = function (req, res) {
             project.conflicts.types = updatedConflictTypes;
             
             return Promise.props({
-                accept_modified: ConflictComment.updateMany({
-                    "comment_id": { "$in": acceptedComment }
+              accept_modified: ConflictComment.updateMany(
+                {
+                  comment_id: { $in: acceptedComment }
                 },
-                    { "$set": { "_deleted": true, "action": "ACCEPT" } }
-                ),
-                label: label.save(),
-                project: ProductLabel.updateOne({_id:req.body.projectId},{$set:{'conflicts.types': updatedConflictTypes,
-            
-                "conflicts.total" : project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount)   }}, function(err, data){
-                    if(err){
-                        console.log("1==========================",err)
-                    }
-                    console.log("2==============================",data)
-                }),
-                reject_modified: ConflictComment.updateMany({
-                    "comment_id": { "$in": rejectedComment }
+                { $set: { _deleted: true, action: "ACCEPT" } }
+              ),
+              label: label.save(),
+              project: ProductLabel.updateOne(
+                { _id: req.body.projectId },
+                {
+                  $set: {
+                    "conflicts.types": updatedConflictTypes,
+                    "conflicts.total": totalConflictCount
+                  }
                 },
-                    { "$set": { "_deleted": true, "action": "REJECT" } }
-                ),
-                rejectedCommentData:rejectedCommentData,
-                acceptedCommentData:acceptedCommentData
-
-            })
+                function(err, data) {
+                  if (err) {
+                    console.log("1==========================", err);
+                  }
+                  console.log(
+                    "2==============================",
+                    data
+                  );
+                }
+              ),
+              reject_modified: ConflictComment.updateMany(
+                {
+                  comment_id: { $in: rejectedComment }
+                },
+                { $set: { _deleted: true, action: "REJECT" } }
+              ),
+              rejectedCommentData: rejectedCommentData,
+              acceptedCommentData: acceptedCommentData
+            });
         })
         .then(function (result) {
             console.log("Accept_modifed/RejectModified-------------------");
