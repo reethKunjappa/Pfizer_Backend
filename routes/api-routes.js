@@ -50,9 +50,11 @@ router.post("/labelling/auditHistory", documentController.auditHistory);
 //MappingSpec
 router.post('/labelling/getMappingSpec',productlabelController.getMappingSpec);
 //Preferences
-router.post("/labelling/preferencesCreate", preferenceController.preferencesCreate);
-router.post("/labelling/getAllPreferences", preferenceController.getAllPreferences);
-router.post("/labelling/updatePreference", preferenceController.updatePreference);
+router.post("/labelling/addRules", preferenceController.addRules);
+router.get("/labelling/getAllRules", preferenceController.getAllRules);
+router.patch("/labelling/updateRules", preferenceController.updateRules);
+router.delete("/labelling/deleteRules", preferenceController.deleteRules);
+
 
 //CheckList
 
