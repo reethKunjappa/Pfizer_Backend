@@ -287,8 +287,11 @@ exports.compare = function (req, res) {
             console.log("Python Conflicts result");
             //console.log(JSON.stringify(result.conflicts));
             if (result.error) {
-                log.error({err:result.err},"Python conflict api response")
-                throw new Error(result.message);
+              log.error(
+                { err: result.error },
+                "Python conflict api response"
+              );
+              throw new Error(result.error);
             }
 
             cfilePath = result.filepath;
