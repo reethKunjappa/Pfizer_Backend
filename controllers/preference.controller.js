@@ -8,7 +8,6 @@ module.exports.getAllRules = (req, res, next) => {
     return Preference.find(req.body)
         .sort({ updated_at: -1 })
         .then(prefData => {
-            console.log(prefData);
             return res.send({
                 result: prefData,
                 status: { code: 0, message: "Get All Preferences" }
