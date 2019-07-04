@@ -609,7 +609,7 @@ exports.commentAck = function (req, res) {
             updatedConflictTypes.push(fontUpdatedObj,spellUpdatedObj,contentUpdatedObj,orderUpdatedObj)
             console.log("updatedConflictTypes-----------------------")
             console.log(updatedConflictTypes)
-            project.conflicts.types = updatedConflictTypes;
+           // project.conflicts.types = updatedConflictTypes;
             
             return Promise.props({
               accept_modified: ConflictComment.updateMany(
