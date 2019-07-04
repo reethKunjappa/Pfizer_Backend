@@ -23,16 +23,21 @@ module.exports.getAllRules = (req, res, next) => {
 module.exports.addRules = (req, resp, next) => {
   if (_.isEmpty(req.body))
     return res.send(responseGenerator(1, "Invalid body."));
-  Preference.create(req.body)
-    .then(res => {
-      return resp.send({
-        result: res,
-        status: { code: 0, message: "Preferences created!" }
+  Preference.deleteMany({}).then(()=>{
+    Preference.create(req.body)
+      .then(res => {
+        return resp.send({
+          result: res,
+          status: { code: 0, message: "Preferences created!" }
+        });
+      })
+      .catch(err => {
+        return resp.send(responseGenerator(1, err.message, err));
       });
-    })
-    .catch(err => {
-      return resp.send(responseGenerator(1, err.message, err));
-    });
+  }).catch(err=>{
+        return resp.send(responseGenerator(1, err.message, err));
+  })  
+  
 };
 
  
