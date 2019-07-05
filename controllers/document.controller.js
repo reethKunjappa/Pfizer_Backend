@@ -208,7 +208,9 @@ exports.uploadFile = function (req, resp) {
 };
 
 function convertToImage(ext, fPath, callback) {
-    if (ext === '.pdf') {
+
+    callback(null, fPath);
+   /*  if (ext === '.pdf') {
         callback(null, fPath)
     } else if (['.docx', '.doc'].indexOf(ext) >= 0) {
         convertDocToPdf(fPath)
@@ -220,7 +222,7 @@ function convertToImage(ext, fPath, callback) {
             })
     } else {
         callback(null, {})
-    }
+    } */
 }
 
 
