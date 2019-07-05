@@ -12,16 +12,15 @@ var PreferenceSchema = new Schema(
       },
       details: [
         {
-          description: [],
-          country: [],
-          scope: String,
-          descriptionId: Number,
-          createdBy: {},
           createdOn: {
             type: Date,
             default: new Date()
-          }
-          
+          },
+          createdBy: {},
+          country: [],
+          sectionName:[],
+          scope: String,
+          content:[]
         }
       ]
     }
