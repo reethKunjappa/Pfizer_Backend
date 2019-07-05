@@ -553,22 +553,22 @@ exports.commentAck = function (req, res) {
                 }
                
                 switch (comment.conflict_type) {
-                    case "FONT_SIZE":
+                    case "Font Size":
                         fontSizeCount++;
                         break;
-                    case "FONT_NAME":
+                    case "Font Name":
                         fontSizeCount++;
                         break;  
-                    case "FONT_COLOUR":
+                    case "Font Colour":
                         fontSizeCount++;
                         break;        
-                    case "GRAMMAR_SPELLING":
+                    case "Grammer Spelling":
                         grammarSpellingCount++;
                         break;
-                    case "ORDER":
+                    case "Order":
                         orderCount++;
                         break;
-                    case "CONTENT":
+                    case "Content":
                         contentCount++;
                         break;
                 };
