@@ -8,7 +8,6 @@ module.exports.getAllRules = (req, res, next) => {
     return Preference.find(req.body)
         .sort({ updated_at: -1 })
         .then(prefData => {
-            console.log(prefData);
             return res.send({
                 result: prefData,
                 status: { code: 0, message: "Get All Preferences" }
@@ -99,22 +98,40 @@ module.exports.deleteRules = (req, res, next) => {
     }).then(() => {
 
         Preference.findByIdAndUpdate(
-            { _id: req.body.p_id },
+            {_id:req.body.p_id},
             {
                 $pull: { details: { _id: req.body.obj_id } }
             },
             { multi: true }
         )
             .then(data => {
-                return res.send({
-                    result: data,
-                    status: { code: 0, message: "Successfully delted!" }
-                });
+                 return Preference.find()
+                   .sort({ updated_at: -1 })
+                   .then(prefData => {
+                     console.log(prefData);
+                     return res.send({
+                       result: prefData,
+                       status: {
+                         code: 0,
+                         message: "Get updated preferences"
+                       }
+                     });
+                   })
+                   .catch(err => {
+                     console.error(err);
+                     return res
+                       .status(400)
+                       .send({
+                         success: false,
+                         err: err.message
+                       });
+                   });
             })
             .catch(err => {
                 return res.status(400).send({ success: false, err: err.message });
             });
     }).catch((err) => {
+        console.log(err)
         //log.error({ err: err }, logMessage.validatationerror);
         res.json(
             responseGenerator(-1, "Mandatory fields Missing", "")

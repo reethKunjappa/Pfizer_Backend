@@ -5,5 +5,4 @@ uploads/
 fs/
 .vscode/
 .env
-logs/
-.env
+logs/error.log
