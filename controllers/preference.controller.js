@@ -98,34 +98,34 @@ module.exports.deleteRules = (req, res, next) => {
     }).then(() => {
 
         Preference.findByIdAndUpdate(
-            {_id:req.body.p_id},
+            { _id: req.body.p_id },
             {
                 $pull: { details: { _id: req.body.obj_id } }
             },
             { multi: true }
         )
             .then(data => {
-                 return Preference.find()
-                   .sort({ updated_at: -1 })
-                   .then(prefData => {
-                     console.log(prefData);
-                     return res.send({
-                       result: prefData,
-                       status: {
-                         code: 0,
-                         message: "Get updated preferences"
-                       }
-                     });
-                   })
-                   .catch(err => {
-                     console.error(err);
-                     return res
-                       .status(400)
-                       .send({
-                         success: false,
-                         err: err.message
-                       });
-                   });
+                return Preference.find()
+                    .sort({ updated_at: -1 })
+                    .then(prefData => {
+                        console.log(prefData);
+                        return res.send({
+                            result: prefData,
+                            status: {
+                                code: 0,
+                                message: "Get updated preferences"
+                            }
+                        });
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        return res
+                            .status(400)
+                            .send({
+                                success: false,
+                                err: err.message
+                            });
+                    });
             })
             .catch(err => {
                 return res.status(400).send({ success: false, err: err.message });
@@ -137,4 +137,37 @@ module.exports.deleteRules = (req, res, next) => {
             responseGenerator(-1, "Mandatory fields Missing", "")
         );
     })
+}
+
+module.exports.getRuleConfig = (req, res, next) => {
+
+    if (_.isEmpty(req.body))
+        return res.send(responseGenerator(1, "Invalid body."));
+    Preference.aggregate([
+        {
+            $project: {
+                ruleName: 1,
+                action: 1,
+                "details.sectionName": 1,
+                "details.content": 1,
+                "details.scope": 1,
+                "details.country.name": 1,
+                _id: 0
+            }
+        },
+        { $match: { "details.country.name": req.body.country } },
+        { $unwind: "$details" },
+        { $match: { "details.country.name": req.body.country } }
+    ])
+        .then(data => {
+            return res.send({
+                configRules: data
+            });
+        })
+        .catch(err => {
+            return res
+                .status(400)
+                .send({ success: false, err: err.message });
+        });
+
 }
