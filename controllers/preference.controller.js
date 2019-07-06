@@ -139,15 +139,14 @@ module.exports.deleteRules = (req, res, next) => {
     })
 }
 
-module.exports.getRuleConfig = (req, res, next) => {
+exports.getRuleConfig = (countryName) => {
 
-    if (_.isEmpty(req.body))
-        return res.send(responseGenerator(1, "Invalid body."));
+    if (_.isEmpty(countryName))
+      return ({data:"Invalid input"});
     Preference.aggregate([
-      { $match: { "details.country.name": req.body.country } },
+      { $match: { "details.country.name": countryName } },
       { $unwind: "$details" },
-
-      { $match: { "details.country.name": req.body.country } },
+      { $match: { "details.country.name": countryName } },
       {
         $project: {
           ruleName: 1,
@@ -155,18 +154,22 @@ module.exports.getRuleConfig = (req, res, next) => {
           "details.sectionName": 1,
           "details.content": 1,
           "details.scope": 1,
-          
+
           _id: 0
         }
       }
     ])
       .then(data => {
-        return res.send({
+        /* return res.send({
           configRules: data
-        });
+        }); */
+        console.log(data);
+        return { data: data };
       })
       .catch(err => {
-        return res.status(400).send({ success: false, err: err.message });
+        console.log(err.message);
+        return { data: err.message };
+        /* return res.status(400).send({ success: false, err: err.message }); */
       });
 
 }

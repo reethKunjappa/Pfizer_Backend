@@ -54,7 +54,7 @@ router.post("/labelling/addRules", preferenceController.addRules);
 router.post("/labelling/getAllRules", preferenceController.getAllRules);
 router.post("/labelling/updateRules", preferenceController.updateRules);
 router.post("/labelling/deleteRules", preferenceController.deleteRules);
-router.post("/labelling/getRuleConfig", preferenceController.getRuleConfig);
+//router.post("/labelling/getRuleConfig", preferenceController.getRuleConfig);
 
 
 //CheckList
