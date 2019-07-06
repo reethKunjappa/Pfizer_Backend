@@ -144,30 +144,29 @@ module.exports.getRuleConfig = (req, res, next) => {
     if (_.isEmpty(req.body))
         return res.send(responseGenerator(1, "Invalid body."));
     Preference.aggregate([
-        {
-            $project: {
-                ruleName: 1,
-                action: 1,
-                "details.sectionName": 1,
-                "details.content": 1,
-                "details.scope": 1,
-                "details.country.name": 1,
-                _id: 0
-            }
-        },
-        { $match: { "details.country.name": req.body.country } },
-        { $unwind: "$details" },
-        { $match: { "details.country.name": req.body.country } }
+      { $match: { "details.country.name": req.body.country } },
+      { $unwind: "$details" },
+
+      { $match: { "details.country.name": req.body.country } },
+      {
+        $project: {
+          ruleName: 1,
+          action: 1,
+          "details.sectionName": 1,
+          "details.content": 1,
+          "details.scope": 1,
+          
+          _id: 0
+        }
+      }
     ])
-        .then(data => {
-            return res.send({
-                configRules: data
-            });
-        })
-        .catch(err => {
-            return res
-                .status(400)
-                .send({ success: false, err: err.message });
+      .then(data => {
+        return res.send({
+          configRules: data
         });
+      })
+      .catch(err => {
+        return res.status(400).send({ success: false, err: err.message });
+      });
 
 }
