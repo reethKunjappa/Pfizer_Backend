@@ -15,6 +15,7 @@ var _ = require("lodash");
 require("mongoose").set("debug", true);
 var _compareAPICallCount=false;
 var currentProjName=null;
+var ruleController = require('../controllers/preference.controller');
 exports.newProject = (req, res,next) => {
     const { projectName, country, createdBy } = req.body
     var productLabel = new ProductLabel();
@@ -186,6 +187,10 @@ exports.compare = function (req, res) {
                 project.documents.length > 0
             ) {
                 currentProjName = project.projectName;
+                return Promise.props({
+                    ruleConfig: ruleController.getRuleConfig(project.country.name)  //getting Rule config data 
+                }).then((data)=>{
+                    console.log(data)
                 var payload = {
                     label_filepath: "",
                     ha_filepath: [],
@@ -194,8 +199,12 @@ exports.compare = function (req, res) {
                     fontFormat_filepath: [],
                     reference_filepath: [],
                     country_name: project.country.name,
-                    project_id: project._id
+                    project_id: project._id,
+                    rulesConfig: data.ruleConfig
                 };
+                
+                
+
                 var basePath = path.resolve("./");
                 mapSpecApIPayload.project_id = project._id;
                 project.documents.forEach(element => {
@@ -276,6 +285,7 @@ exports.compare = function (req, res) {
                 console.log(JSON.stringify(options));
                 //console.log(payload)
                 return rp(options);
+            })
             } else {
                 throw new Error();
             }

@@ -142,34 +142,30 @@ module.exports.deleteRules = (req, res, next) => {
 exports.getRuleConfig = (countryName) => {
 
     if (_.isEmpty(countryName))
-      return ({data:"Invalid input"});
-    Preference.aggregate([
-      { $match: { "details.country.name": countryName } },
-      { $unwind: "$details" },
-      { $match: { "details.country.name": countryName } },
-      {
-        $project: {
-          ruleName: 1,
-          action: 1,
-          "details.sectionName": 1,
-          "details.content": 1,
-          "details.scope": 1,
-
-          _id: 0
-        }
-      }
-    ])
-      .then(data => {
-        /* return res.send({
-          configRules: data
-        }); */
-        console.log(data);
-        return { data: data };
-      })
-      .catch(err => {
-        console.log(err.message);
-        return { data: err.message };
-        /* return res.status(400).send({ success: false, err: err.message }); */
-      });
-
+      return [];
+    return new Promise((resolve,reject)=>{
+        Preference.aggregate([
+            { $match: { "details.country.name": countryName } },
+            { $unwind: "$details" },
+            { $match: { "details.country.name": countryName } },
+            {
+              $project: {
+                ruleName: 1,
+                action: 1,
+                "details.sectionName": 1,
+                "details.content": 1,
+                "details.scope": 1,
+                _id: 0
+              }
+            }
+          ])
+            .then(rule => {
+                console.log("Rule config: ", rule)
+             resolve(rule)
+            })
+            .catch(err => {
+              console.log(err.message);
+              reject([])
+            });
+   })
 }
