@@ -1,6 +1,7 @@
 var mongoose = require("mongoose");
 //mongoose.set('debug', true);
 var { DocumentSchema, ProductLabel } = require("../models/model");
+var ConflictComment = require("../models/conflict.model");
 var Audit = require('../models/audit.model');
 const { responseGenerator } = require('../utility/commonUtils');
 const appConfig = require('../config/appConfig');
@@ -90,7 +91,8 @@ exports.reUploadFile = function (req, resp) {
                 pdfPath: convertToImagePromise(path.extname(document.documentName), path.resolve(document.location, document.documentName)),
                 document: document,
                 oldDoc: DocumentSchema.findById(req.query.documentId),
-                project: ProductLabel.findById(req.query.projectId)
+                project: ProductLabel.findById(req.query.projectId),
+                comment:ConflictComment.find({ project_id: req.query.projectId, _deleted: false })
             });
         }).then(function (result) {
             var pdfPath = result.pdfPath;
@@ -114,13 +116,20 @@ exports.reUploadFile = function (req, resp) {
             result.project.conflicts.types=[];
             //push new document id
             result.project.documents.push(result.document._id);
+            //reset all commment _deleted = false
+           /*  result.comment.forEach((data)=>{
+                data._deleted = true;
+            })
+             */
 
             return Promise.props({
                 document: result.document.save(),
                 oldDoc: result.oldDoc.save(),
-                project: result.project.save()
+                project: result.project.save(),
+                comment:result.comment.save()
             });
         }).then(function (result) {
+
             resp.json(responseGenerator(0, "Successfully Uploaded", result.document));
             var audit = {
                 user: JSON.parse(req.query.uploadedBy),

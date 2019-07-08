@@ -200,7 +200,7 @@ exports.compare = function (req, res) {
                     reference_filepath: [],
                     country_name: project.country.name,
                     project_id: project._id,
-                    rulesConfig: data.ruleConfig
+                    rulesConfig: {result:data.ruleConfig}   
                 };
                 
                 

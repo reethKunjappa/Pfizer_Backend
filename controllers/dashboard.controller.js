@@ -105,13 +105,17 @@ exports.getCount = (req, res, next) => {
                 });
 
             }).then((result) => {
-                responseObject.lastUploadedDocumentDate = result[0].uploadedDate;
-               
+               if(result.length>0)
+               {
+                    responseObject.lastUploadedDocumentDate = result[0].uploadedDate;
+                }
             }).then(()=>{
                 return  ConflictShcema.find({},{created_at:1,_id:0}).limit(1).sort({created_at:-1})
             })
             .then((result)=>{
-                responseObject.lastConflictCreated = result[0].created_at;
+                if(result.length>0){
+                    responseObject.lastConflictCreated = result[0].created_at;
+                }     
                 res.json(responseGenerator(0, "Successfully retrieved", responseObject, ""));
             })
             .catch((err) => {
@@ -126,7 +130,7 @@ exports.getCount = (req, res, next) => {
                     err: err
                 });
             }).finally((e) => {
-               
+               // return res.json(responseGenerator(-1, "No data"));
             })
         } catch (e) {
             console.log(e);

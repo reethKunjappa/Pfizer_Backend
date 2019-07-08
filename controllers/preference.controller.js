@@ -152,9 +152,10 @@ exports.getRuleConfig = (countryName) => {
               $project: {
                 ruleName: 1,
                 action: 1,
-                "details.sectionName": 1,
+               
+                 "details.sectionName": 1,
                 "details.content": 1,
-                "details.scope": 1,
+                "details.scope": 1, 
                 _id: 0
               }
             }
