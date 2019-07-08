@@ -236,7 +236,7 @@ exports.compare = function (req, res) {
                             mapSpecApIPayload.ref_id = element._id;
                              payload.reference_filepath.push(_.cloneDeep(filePath));
                              if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){                               
-                                //documentConversation(filePath,element);                  
+                                documentConversation(filePath,element);                  
                             } 
                             break;
                         case "Previous Label": 

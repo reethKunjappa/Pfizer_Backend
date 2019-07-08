@@ -109,7 +109,8 @@ exports.reUploadFile = function (req, resp) {
                 result.project.documents.splice(index, 1);
             }
             result.project.conflicted = false;
-
+            result.project.conflicts.total= 0;
+            result.project.conflicts.types=[];
             //push new document id
             result.project.documents.push(result.document._id);
 
@@ -180,13 +181,13 @@ exports.uploadFile = function (req, resp) {
                             documentSchema.location = fileUploadPath;
                             documentSchema.uploadedBy = JSON.parse(req.query.uploadedBy);
                             documentSchema.uploadedDate = new Date();
-                            /* convertToImagePromise(path.extname(documentSchema.documentName), path.resolve(documentSchema.location, documentSchema.documentName), function (err, pdfPath) {
+                             convertToImagePromise(path.extname(documentSchema.documentName), path.resolve(documentSchema.location, documentSchema.documentName), function (err, pdfPath) {
                                  documentSchema.pdfPath = {
                                      location: pdfPath,
                                      destination: fileVirtualPath + "/" + documentId + "/" + path.basename(pdfPath)
                                  };
                                
-                             }); */
+                             }); 
                             documentSchema.save(function (err) {
                                 if (err) {
                                     resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data", ""));
