@@ -572,7 +572,7 @@ exports.commentAck = function (req, res) {
                     case "Font Colour":
                         fontSizeCount++;
                         break;        
-                    case "Grammer Spelling":
+                    case "Spell and Grammar":
                         grammarSpellingCount++;
                         break;
                     case "Order":
