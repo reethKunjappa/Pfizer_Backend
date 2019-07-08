@@ -108,6 +108,7 @@ exports.reUploadFile = function (req, resp) {
             if (index >= 0) {
                 result.project.documents.splice(index, 1);
             }
+            // On reuoload reset count
             result.project.conflicted = false;
             result.project.conflicts.total= 0;
             result.project.conflicts.types=[];
