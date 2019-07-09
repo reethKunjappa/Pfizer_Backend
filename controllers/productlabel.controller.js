@@ -242,7 +242,7 @@ exports.compare = function (req, res) {
                         case "Previous Label": 
                             payload.previousLabel_filepath.push(_.cloneDeep(filePath));
                               if(path.extname(filePath)=== '.docx' || path.extname(filePath)=== '.doc'){
-                               //documentConversation(filePath,element); 
+                               documentConversation(filePath,element); 
                             }  
                             break;
                         case "HA Guidelines":

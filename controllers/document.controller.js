@@ -87,12 +87,14 @@ exports.reUploadFile = function (req, resp) {
                     destination : fileVirtualPath + "/" + documentId + "/" + file.originalname                             
                 }
             }
+            
             return Promise.props({
                 pdfPath: convertToImagePromise(path.extname(document.documentName), path.resolve(document.location, document.documentName)),
                 document: document,
                 oldDoc: DocumentSchema.findById(req.query.documentId),
                 project: ProductLabel.findById(req.query.projectId),
-                comment:ConflictComment.find({ project_id: req.query.projectId, _deleted: false })
+                comment:ConflictComment.find({ project_id: req.query.projectId, _deleted: false }),
+                
             });
         }).then(function (result) {
             var pdfPath = result.pdfPath;
@@ -101,7 +103,7 @@ exports.reUploadFile = function (req, resp) {
                 destination: fileVirtualPath + "/" + documentId + "/" + path.basename(pdfPath)
             }
             result.document = new DocumentSchema(result.document);
-
+           
             //soft delete old file
             result.oldDoc._deleted = true;
 
@@ -117,16 +119,18 @@ exports.reUploadFile = function (req, resp) {
             //push new document id
             result.project.documents.push(result.document._id);
             //reset all commment _deleted = false
-           /*  result.comment.forEach((data)=>{
-                data._deleted = true;
-            })
-             */
+            ConflictComment.updateMany({project_id: req.query.projectId, _deleted: false },
+                {$set:{_deleted:true}},
+                function(err,data){
+                    if(err) console.log(err)
+                    else{console.log(data)}
+                }
+                )
 
             return Promise.props({
                 document: result.document.save(),
                 oldDoc: result.oldDoc.save(),
-                project: result.project.save(),
-                comment:result.comment.save()
+                project: result.project.save()
             });
         }).then(function (result) {
 
