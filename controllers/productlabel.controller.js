@@ -710,7 +710,7 @@ exports.commentAck = function (req, res) {
 
                 })
                 .then(comments_ => {
-                     _compareAPICallCount = true;
+                     _compareAPICallCount = false;
                     return res.json(
                         responseGenerator(
                             0,
