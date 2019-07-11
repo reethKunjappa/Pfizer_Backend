@@ -17,29 +17,20 @@ var _compareAPICallCount = false;
 var currentProjName = null;
 var ruleController = require('../controllers/preference.controller');
 exports.newProject = (req, res, next) => {
-    const { projectName, country, createdBy } = req.body
+    const { projectName, country, proprietaryName, createdBy } = req.body;
     var productLabel = new ProductLabel();
-    var conflicts = {
-        total: 0,
-        /* types: {
-            font: 0,
-            content: 0,
-            order: 0
-        } , */
-
-    }; //
     productLabel.projectName = projectName;
     productLabel.country = country;
+    productLabel.proprietaryName = proprietaryName;
     productLabel.createdBy = createdBy;
     productLabel.createdOn = new Date();
-    //As per UI requirement(Shashank) inserting static conflicts and favorite
-    //productLabel.conflicts = conflicts;
     productLabel.favorite = 0;
     try {
 
         let inputValidationFields = {
             projectName: 'required',
             country: 'required',
+            proprietaryName:'required',
             createdBy: 'required'
         };
         inputValidator(req.body, inputValidationFields).then((result) => {
@@ -88,7 +79,6 @@ exports.getProjects = function (req, res) {
                 }
                 else {
                     getUserFav(req, res, projects);
-                    //res.json(responseGenerator(0, "Successfully retrieved Projects list", projects, ""));
                 }
             });
     } catch (err) {
@@ -202,9 +192,6 @@ exports.compare = function (req, res) {
                             project_id: project._id,
                             rulesConfig: { result: data.ruleConfig }
                         };
-
-
-
                         var basePath = path.resolve("./");
                         mapSpecApIPayload.project_id = project._id;
                         project.documents.forEach(element => {
@@ -256,8 +243,6 @@ exports.compare = function (req, res) {
                                     break;
                             }
                         });
-
-
                         const options = {
                             uri: PYTHON_URL_CONFLITS,
                             method: "POST",
@@ -289,7 +274,6 @@ exports.compare = function (req, res) {
                 } else {
                     throw new Error();
                 }
-                // })
             })
             .then(function (result) {
                 console.log("Python End Execution Time : %dms", new Date())
@@ -594,14 +578,9 @@ exports.commentAck = function (req, res) {
                         };
 
                     });
-                    console.log("After pushing into Array------------------")
-                    console.log(acceptedCommentData)
-                    console.log(rejectedCommentData)
-                    console.log("---------------------------------------")
                     totalConflictCount = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount);
-
                     var updatedConflictTypes = [];
-                    //project.conflicts.types = [];
+
                     let fontObj = _.find(project.conflicts.types, ['key', 'font']);
                     let fontIndex = project.conflicts.types.indexOf(fontObj)
                     project.conflicts.types[fontIndex].value -= fontSizeCount;
@@ -627,10 +606,6 @@ exports.commentAck = function (req, res) {
 
 
                     updatedConflictTypes.push(fontUpdatedObj, spellUpdatedObj, contentUpdatedObj, orderUpdatedObj)
-                    console.log("updatedConflictTypes-----------------------")
-                    console.log(updatedConflictTypes)
-                    // project.conflicts.types = updatedConflictTypes;
-
                     return Promise.props({
                       accept_modified: ConflictComment.updateMany(
                         {
@@ -683,11 +658,7 @@ exports.commentAck = function (req, res) {
                     });
                 })
                 .then(function (result) {
-                    console.log("Accept_modifed/RejectModified-------------------");
-                    console.log(result.acceptedCommentData)
-                    console.log(result.rejectedCommentData)
                     var audit = {};
-
                     switch (req.body.commentAction.action) {
                         case 'acceptAll':
                             audit = {
@@ -794,7 +765,6 @@ exports.commentAck = function (req, res) {
 exports.getMappingSpec = function (req, res) {
 
     const options = {
-        //ToDO: Update on getting the ip address
         uri: PYTHON_URL_MAPPING,
         method: "POST",
         json: true,
@@ -842,7 +812,6 @@ exports.getMappingSpec = function (req, res) {
         log.error({ err: err }, logMessage.unhandlederror);
         res.json(responseGenerator(-1, "Something went wrong"));
     }
-
 }
 
 
