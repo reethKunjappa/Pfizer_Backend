@@ -632,37 +632,54 @@ exports.commentAck = function (req, res) {
                     // project.conflicts.types = updatedConflictTypes;
 
                     return Promise.props({
-                        accept_modified: ConflictComment.updateMany(
-                            {
-                                comment_id: { $in: acceptedComment }
-                            },
-                            { $set: { _deleted: true, action: "ACCEPT" } }
-                        ),
-                        label: label.save(),
-                        project: ProductLabel.updateOne(
-                            { _id: req.body.projectId },
-                            {
-                                $set: {
-                                    "conflicts.types": updatedConflictTypes,
-                                    "conflicts.total": totalConflictCount
-                                }
-                            },
-                            function (err, data) {
-                                if (err) {
-                                    _compareAPICallCount=false;
-                                    console.log(err);
-                                }
-                                console.log(data);
-                            }
-                        ),
-                        reject_modified: ConflictComment.updateMany(
-                            {
-                                comment_id: { $in: rejectedComment }
-                            },
-                            { $set: { _deleted: true, action: "REJECT" } }
-                        ),
-                        rejectedCommentData: rejectedCommentData,
-                        acceptedCommentData: acceptedCommentData
+                      accept_modified: ConflictComment.updateMany(
+                        {
+                          comment_id: {
+                            $in: acceptedComment
+                          }
+                        },
+                        {
+                          $set: {
+                            _deleted: true,
+                            action: "ACCEPT"
+                          }
+                        }
+                      ),
+                      label: label.save(),
+                      productLabel: productLabel.findById(
+                        req.body.projectId
+                      ),
+                      project: ProductLabel.updateOne(
+                        { _id: req.body.projectId },
+                        {
+                          $set: {
+                            "conflicts.types": updatedConflictTypes,
+                            "conflicts.total": totalConflictCount
+                          }
+                        },
+                        function(err, data) {
+                          if (err) {
+                            _compareAPICallCount = false;
+                            console.log(err);
+                          }
+                          console.log(data);
+                        }
+                      ),
+                      reject_modified: ConflictComment.updateMany(
+                        {
+                          comment_id: {
+                            $in: rejectedComment
+                          }
+                        },
+                        {
+                          $set: {
+                            _deleted: true,
+                            action: "REJECT"
+                          }
+                        }
+                      ),
+                      rejectedCommentData: rejectedCommentData,
+                      acceptedCommentData: acceptedCommentData
                     });
                 })
                 .then(function (result) {
@@ -674,29 +691,61 @@ exports.commentAck = function (req, res) {
                     switch (req.body.commentAction.action) {
                         case 'acceptAll':
                             audit = {
-                                user: req.body.user,
-                                project: result.project,
-                                comments: result.acceptedCommentData,
-                                actionType: "Accept All Conflicts",
-                                description: result.acceptedCommentData.length + ' Comments Accepted of type ' + req.body.commentAction.type
+                              user: req.body.user,
+                              project:
+                                result.productLabel,
+                              comments:
+                                result.acceptedCommentData,
+                              actionType:
+                                "Accept All Conflicts",
+                              description:
+                                result
+                                  .acceptedCommentData
+                                  .length +
+                                " Comments Accepted of type " +
+                                req.body
+                                  .commentAction
+                                  .type
                             };
                             break;
                         case 'rejectAll':
                             audit = {
-                                user: req.body.user,
-                                project: result.project,
-                                comments: result.rejectedCommentData,
-                                actionType: "Reject All Conflicts",
-                                description: result.rejectedCommentData.length + ' Comments Rejected of type ' + req.body.commentAction.type
+                              user: req.body.user,
+                              project:
+                                result.productLabel,
+                              comments:
+                                result.rejectedCommentData,
+                              actionType:
+                                "Reject All Conflicts",
+                              description:
+                                result
+                                  .rejectedCommentData
+                                  .length +
+                                " Comments Rejected of type " +
+                                req.body
+                                  .commentAction
+                                  .type
                             };
                             break;
                         case 'accept/reject':
                             audit = {
-                                user: req.body.user,
-                                project: result.project,
-                                comments: result.acceptedCommentData.concat(result.rejectedCommentData),
-                                actionType: "Accept/Reject Conflicts",
-                                description: result.acceptedCommentData.length + ' Accepted, ' + result.rejectedCommentData.length + ' Rejected'
+                              user: req.body.user,
+                              project:
+                                result.productLabel,
+                              comments: result.acceptedCommentData.concat(
+                                result.rejectedCommentData
+                              ),
+                              actionType:
+                                "Accept/Reject Conflicts",
+                              description:
+                                result
+                                  .acceptedCommentData
+                                  .length +
+                                " Accepted, " +
+                                result
+                                  .rejectedCommentData
+                                  .length +
+                                " Rejected"
                             };
                             break;
                     }
