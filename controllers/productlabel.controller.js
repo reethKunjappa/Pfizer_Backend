@@ -497,6 +497,15 @@ exports.viewConflictProject = function (req, res) {
 
 exports.commentAck = function (req, res) {
     var project;
+    if (_compareAPICallCount)
+                      return res.json(
+                        responseGenerator(
+                          -1,
+                          "Currently serving:  " +
+                            currentProjName +
+                            " ,  request, Please try after some time!"
+                        )
+                    );
     try {
 
         let inputValidationFields = {
@@ -510,15 +519,6 @@ exports.commentAck = function (req, res) {
             ProductLabel.findOne({ _id: req.body.projectId }).populate('documents')
                 .then(function (_project) {
                     project = _project
-                    if (_compareAPICallCount)
-                      return res.json(
-                        responseGenerator(
-                          -1,
-                          "Currently serving:  " +
-                            currentProjName +
-                            " ,  request, Please try after some time!"
-                        )
-                      );
                       _compareAPICallCount = true;
                       currentProjName = project.projectName;
                     var labelDoc = _.find(project.documents, { fileType: 'Label' });
