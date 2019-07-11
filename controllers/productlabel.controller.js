@@ -646,7 +646,7 @@ exports.commentAck = function (req, res) {
                         }
                       ),
                       label: label.save(),
-                      productLabel: productLabel.findById(
+                      productLabel: ProductLabel.findById(
                         req.body.projectId
                       ),
                       project: ProductLabel.updateOne(
@@ -770,17 +770,20 @@ exports.commentAck = function (req, res) {
                     );
                 })
                 .catch(function (err) {
+                    console.log(err)
                     _compareAPICallCount = false;
                     log.error({ err: err }, logMessage.unhandlederror);
                     return res.json(responseGenerator(-1, "Unable to fetch the Project details", err));
 
                 });
         }).catch((err) => {
+            console.log(err)
             _compareAPICallCount = false;
             log.error({ err: err }, logMessage.validatationerror);
             res.json(responseGenerator(-1, err.message));
         })
     } catch (err) {
+        console.log(err)
         _compareAPICallCount = false;
         log.error({ err: err }, logMessage.unhandlederror);
         res.json(responseGenerator(-1, "Something went wrong"));
