@@ -12,6 +12,10 @@ var ProductLabelSchema = new Schema({
     type: Object,
     required: true
   },
+  proprietaryName:{
+    type:String,
+    required:true
+  },
   createdBy: {
     type: Object,
     required: true
