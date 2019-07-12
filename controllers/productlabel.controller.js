@@ -218,19 +218,87 @@ exports.compare = function (req, res) {
                                         location: conflictDoc.pdfPath.location,
                                         destination: conflictDoc.destination,
                                     }
+                                        //create a copy of the label file
+                                    var srcPath = path.resolve("./", coreDoc.location, coreDoc.documentName
+                                    );
+                                    var destPath = path.resolve(
+                                        "./",
+                                        conflictDoc.location,
+                                        conflictDoc.documentName
+                                    );
+                                    if (!fs.existsSync(destPath.replace(conflictDoc.documentName))) {
+                                        fs.mkdirSync(destPath.replace(conflictDoc.documentName, ""));
+                                    }
+                                    fs.copyFileSync(srcPath, destPath);
                                     break;
                                 case "Reference":
+
+                                        coreDoc = element;
+                                        conflictDoc = _.cloneDeep(coreDoc);
+                                        var id = uuid();
+                                        conflictDoc.documentId = id;
+                                        conflictDoc.fileType = "CONFLICT";
+                                        conflictDoc.destination =
+                                            fileVirtualPath + "/" + id + "/" + element.documentName;
+                                        conflictDoc.location = fileUploadPath + "/" + id;
+                                        cVpath = conflictDoc.destination;
+                                        payload.reference_filepath.push(path.resolve("./", conflictDoc.location, conflictDoc.documentName));
+                                        conflictDoc["originalPath"] = {
+                                            location: conflictDoc.pdfPath.location,
+                                            destination: conflictDoc.destination,
+                                        }
+                                            //create a copy of the label file
+                                        var srcPath = path.resolve("./", coreDoc.location, coreDoc.documentName
+                                        );
+                                        var destPath = path.resolve(
+                                            "./",
+                                            conflictDoc.location,
+                                            conflictDoc.documentName
+                                        );
+                                        if (!fs.existsSync(destPath.replace(conflictDoc.documentName))) {
+                                            fs.mkdirSync(destPath.replace(conflictDoc.documentName, ""));
+                                        }
+                                        fs.copyFileSync(srcPath, destPath);
+
+
                                     mapSpecApIPayload.ref_id = element._id;
-                                    payload.reference_filepath.push(_.cloneDeep(filePath));
+                                   // payload.reference_filepath.push(_.cloneDeep(filePath));
                                     if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
                                         documentConversation(filePath, element);
                                     }
                                     break;
                                 case "Previous Label":
-                                    payload.previousLabel_filepath.push(_.cloneDeep(filePath));
-                                    if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
-                                        documentConversation(filePath, element);
-                                    }
+                                    
+                                        coreDoc = element;
+                                        conflictDoc = _.cloneDeep(coreDoc);
+                                        var id = uuid();
+                                        conflictDoc.documentId = id;
+                                        conflictDoc.fileType = "CONFLICT";
+                                        conflictDoc.destination =
+                                            fileVirtualPath + "/" + id + "/" + element.documentName;
+                                        conflictDoc.location = fileUploadPath + "/" + id;
+                                        cVpath = conflictDoc.destination;
+                                        payload.previousLabel_filepath.push(path.resolve("./", conflictDoc.location, conflictDoc.documentName));
+                                        conflictDoc["originalPath"] = {
+                                            location: conflictDoc.pdfPath.location,
+                                            destination: conflictDoc.destination,
+                                        }
+                                            //create a copy of the label file
+                                        var srcPath = path.resolve("./", coreDoc.location, coreDoc.documentName
+                                        );
+                                        var destPath = path.resolve(
+                                            "./",
+                                            conflictDoc.location,
+                                            conflictDoc.documentName
+                                        );
+                                        if (!fs.existsSync(destPath.replace(conflictDoc.documentName))) {
+                                            fs.mkdirSync(destPath.replace(conflictDoc.documentName, ""));
+                                        }
+                                        fs.copyFileSync(srcPath, destPath);
+                                        //payload.previousLabel_filepath.push(_.cloneDeep(filePath));
+                                        if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
+                                            documentConversation(filePath, element);
+                                        }
                                     break;
                                 case "HA Guidelines":
                                     payload.ha_filepath.push(filePath);
@@ -252,18 +320,6 @@ exports.compare = function (req, res) {
                                 "Content-Type": "application/json"
                             }
                         };
-                        //create a copy of the label file
-                        var srcPath = path.resolve("./", coreDoc.location, coreDoc.documentName
-                        );
-                        var destPath = path.resolve(
-                            "./",
-                            conflictDoc.location,
-                            conflictDoc.documentName
-                        );
-                        if (!fs.existsSync(destPath.replace(conflictDoc.documentName))) {
-                            fs.mkdirSync(destPath.replace(conflictDoc.documentName, ""));
-                        }
-                        fs.copyFileSync(srcPath, destPath);
                         pythonStartTime = new Date();
                         console.log("Python Start Execution Time : %dms ", pythonStartTime)
                         console.log("Python Payload: ")
