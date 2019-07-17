@@ -4,6 +4,7 @@ var { DocumentSchema } = require("../models/model");
 var RuleConfigSchema = new Schema(
     [
         {
+            createdBy:{},
             rulesStep: {
                 ruleName: String,
                 ruleDescription: String

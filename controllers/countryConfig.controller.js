@@ -127,7 +127,7 @@ exports.createRuleConfig = (req, res) => {
 
 exports.getAllConfig = (req, res) => {
      var finalResult={"countryConfig":"","ruleConfig":""}
-    countryConfigModel.find({}).populate("documents").then(data => {
+    countryConfigModel.find({ createdBy: req.body.createdBy}).populate("documents").then(data => {
         finalResult.countryConfig = data
         ruleConfigModel.find({}).populate("documents").then(data=>{
             finalResult.ruleConfig = data
