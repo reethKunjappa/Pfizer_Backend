@@ -5,9 +5,11 @@ var { DocumentSchema } = require("../models/model");
 var CountryConfigSchema = new Schema(
     [
         {
+            createdBy: {},
             country: [],
             countryGrouping: String,
             languagePreference: String,
+            
             documents: [{ type: mongoose.Schema.ObjectId, ref: DocumentSchema }]
             
         }
