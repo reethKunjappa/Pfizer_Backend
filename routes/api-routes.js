@@ -58,7 +58,7 @@ router.post("/labelling/deleteRules", preferenceController.deleteRules);
 //router.post("/labelling/getRuleConfig", preferenceController.getRuleConfig);
 
 // File Upload for countryConfig
-router.route("/labelling/countryConfigFileUpload").post(countryConfigController.countryConfigFileUpload);
+router.route("/labelling/configFileUpload").post(countryConfigController.configFileUpload);
 router.route("/labelling/createCountryConfig").post(countryConfigController.createCountryConfig);
 router.route("/labelling/createRuleConfig").post(countryConfigController.createRuleConfig);
 router.route("/labelling/getAllConfig").post(countryConfigController.getAllConfig);

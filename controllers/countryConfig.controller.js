@@ -22,7 +22,7 @@ var storage = multer.diskStorage({
 });
 var upload = multer({ storage: storage }).any();
 
-exports.countryConfigFileUpload = function (req, res) {
+exports.configFileUpload = function (req, res) {
     try {
         fileUploadPath = appConfig["FS_PATH"];
         fileVirtualPath = appConfig["DOCUMENT_VIEW_PATH"];
@@ -84,7 +84,7 @@ function updateDocumentSection(req, res, countryConfig_id, _id) {
         }
         //$push will append into array, $set will insert new array and remove old
         dataModel.findByIdAndUpdate(countryConfig_id, { $push: { documents: _id } }, { new: true }).populate("documents").then((data) => {
-            res.json(responseGenerator(0, "Successfully Uploaded", data));
+            res.json(responseGenerator(0, "Successfully Uploaded", data.documents[0]));
         }).catch(err => {
             throw new Error(err)
         })
