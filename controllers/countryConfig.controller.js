@@ -83,7 +83,7 @@ function updateDocumentSection(req, res, countryConfig_id, _id) {
             dataModel=ruleConfigModel
         }
         //$push will append into array, $set will insert new array and remove old
-        dataModel.findByIdAndUpdate(countryConfig_id, { $push: { documents: _id } }, { new: true }).populate("documents").then((data) => {
+        dataModel.findByIdAndUpdate(countryConfig_id, { $push: { documents: _id } }, { new: true }).populate({ path: "documents", options: { sort: { updated_at:-1}}}).then((data) => {
             res.json(responseGenerator(0, "Successfully Uploaded", data.documents[0]));
         }).catch(err => {
             throw new Error(err)
