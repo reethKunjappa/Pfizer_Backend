@@ -12,7 +12,8 @@ var dashboardController = require('../controllers/dashboard.controller');
 var favouriteController = require('../controllers/favourite.controller');
 var commentsController = require('../controllers/comments.controller');
 var checkListController = require('../controllers/checklist.controller');
-var preferenceController         = require('../controllers/preference.controller'); 
+var preferenceController = require('../controllers/preference.controller');
+var countryConfigController = require('../controllers/countryConfig.controller')
 //authController
 router.route('/auth/register').post(authController.new);
 router.route('/signin').post(authController.signin);
@@ -48,13 +49,21 @@ router.post('/labelling/getAllComments', commentsController.getAllComments);
 //Audit/History
 router.post("/labelling/auditHistory", documentController.auditHistory);
 //MappingSpec
-router.post('/labelling/getMappingSpec',productlabelController.getMappingSpec);
+router.post('/labelling/getMappingSpec', productlabelController.getMappingSpec);
 //Preferences
 router.post("/labelling/addRules", preferenceController.addRules);
 router.post("/labelling/getAllRules", preferenceController.getAllRules);
 router.post("/labelling/updateRules", preferenceController.updateRules);
 router.post("/labelling/deleteRules", preferenceController.deleteRules);
 //router.post("/labelling/getRuleConfig", preferenceController.getRuleConfig);
+
+// File Upload for countryConfig
+router.route("/labelling/countryConfigFileUpload").post(countryConfigController.countryConfigFileUpload);
+router.route("/labelling/createCountryConfig").post(countryConfigController.createCountryConfig);
+router.route("/labelling/createRuleConfig").post(countryConfigController.createRuleConfig);
+router.route("/labelling/getAllConfig").post(countryConfigController.getAllConfig);
+
+
 
 
 //CheckList

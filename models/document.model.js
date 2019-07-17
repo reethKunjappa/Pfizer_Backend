@@ -6,7 +6,6 @@ var DocumentSchema = new Schema({
         type: String,
         required: true
     },
-    imagePaths: [],
     documentid: {
         type: String,
         required: true,
@@ -22,11 +21,15 @@ var DocumentSchema = new Schema({
     projectId: {
         type: String
     },
+    countryConfig_id:{
+        type:String
+    },
     uploadedBy: {
         type: Object
     },
     uploadedDate: {
-        type: Date
+        type: Date,
+        default: new Date()
     },
     location: {
         type: String
