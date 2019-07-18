@@ -4,26 +4,38 @@ var { DocumentSchema } = require("../models/model");
 var RuleConfigSchema = new Schema(
     [
         {
-            createdBy:{},
-            rulesStep: {
+            createdBy: {},
+            rulesSetup: {
                 ruleName: String,
                 ruleDescription: String
             },
             rulesApplication: {
                 countryGroup: String,
                 countryName: Array,
-                gloabl: Boolean,
+                gloabl: {
+                    type: Boolean,
+                    default: false
+                },
                 sections: {},
-                allSections: Boolean
+                allSections: {
+                    type: Boolean,
+                    default: false
+                }
             },
             action: {
                 conflictType: String,
                 comments: String,
                 modifyLabelOnAccept: Boolean,
-                allowReject: Boolean
+                allowReject: {
+                    type: Boolean,
+                    default: false
+                }
             },
             additionalInformation: {
-                additionalInfo: Boolean,
+                additionalInfo: {
+                    type: Boolean,
+                    default: false
+                },
                 fieldName1: String,
                 dataValue1: String,
                 fieldName2: String,
@@ -34,7 +46,7 @@ var RuleConfigSchema = new Schema(
                 listValues: String
             },
             documents: [{ type: mongoose.Schema.ObjectId, ref: DocumentSchema }]
-        
+
         }
     ],
     {

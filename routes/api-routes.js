@@ -13,7 +13,7 @@ var favouriteController = require('../controllers/favourite.controller');
 var commentsController = require('../controllers/comments.controller');
 var checkListController = require('../controllers/checklist.controller');
 var preferenceController = require('../controllers/preference.controller');
-var countryConfigController = require('../controllers/countryConfig.controller')
+var configController = require('../controllers/config.controller')
 //authController
 router.route('/auth/register').post(authController.new);
 router.route('/signin').post(authController.signin);
@@ -58,10 +58,10 @@ router.post("/labelling/deleteRules", preferenceController.deleteRules);
 //router.post("/labelling/getRuleConfig", preferenceController.getRuleConfig);
 
 // File Upload for countryConfig
-router.route("/labelling/configFileUpload").post(countryConfigController.configFileUpload);
-router.route("/labelling/createCountryConfig").post(countryConfigController.createCountryConfig);
-router.route("/labelling/createRuleConfig").post(countryConfigController.createRuleConfig);
-router.route("/labelling/getAllConfig").post(countryConfigController.getAllConfig);
+router.route("/labelling/configFileUpload").post(configController.configFileUpload);
+router.route("/labelling/createCountryConfig").post(configController.createCountryConfig);
+router.route("/labelling/createRuleConfig").post(configController.createRuleConfig);
+router.route("/labelling/getAllConfig").post(configController.getAllConfig);
 
 
 
