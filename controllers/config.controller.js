@@ -140,3 +140,43 @@ exports.getAllConfig = (req, res) => {
     })
 }
 
+exports.getPythonPayload = (req,res)=>{
+
+    if (_.isEmpty(req.body.countryName))
+        return [];
+    return ruleConfigModel.aggregate([
+        { $match: { "rulesApplication.country.name": req.body.countryName } },
+            { $unwind: "$rulesApplication" },
+             { $match: { "rulesApplication.country.name": req.body.countryName } },
+        
+            {
+                $project: {
+                    ruleName:'$rulesSetup.ruleName',
+                    ruleDescription:'$rulesSetup.ruleDescription',
+                    comments:'$action.comments',
+                    allSections:"$rulesApplication.allSections",
+                    sections:"$rulesApplication.sections.value",
+                    section_selection:"$rulesApplication.sections.condition",
+                    conflictType:"$action.conflictType",
+                    //additionalInformation: {$concatArrays: ["$additionalInformation.addInfo.label","$additionalInformation.addInfo.value"]} , 
+                    additionalInformation:"$additionalInformation.addInfo",
+                    
+                    "exceptionData": 1,
+                    _id: 0
+                }
+            }
+        ])
+            .then(rule => {
+                console.log("Rule config: ", rule)
+                return res.json(responseGenerator(0, "Successfully get pythonPyload data: ", rule));
+                //resolve(rule)
+            })
+            .catch(err => {
+                console.log(err.message);
+               // reject([])
+                res.json(
+                    responseGenerator(-1, "Unable to  get pythonPyload data", err)
+                );
+            });
+    
+}

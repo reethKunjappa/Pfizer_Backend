@@ -11,8 +11,8 @@ var RuleConfigSchema = new Schema(
             },
             rulesApplication: {
                 countryGroup: String,
-                countryName: Array,
-                gloabl: {
+                country: Array,
+                global: {
                     type: Boolean,
                     default: false
                 },
@@ -25,7 +25,10 @@ var RuleConfigSchema = new Schema(
             action: {
                 conflictType: String,
                 comments: String,
-                modifyLabelOnAccept: Boolean,
+                modifyLabelOnAccept: {
+                    type: Boolean,
+                    default: false
+                },
                 allowReject: {
                     type: Boolean,
                     default: false
@@ -36,15 +39,9 @@ var RuleConfigSchema = new Schema(
                     type: Boolean,
                     default: false
                 },
-                fieldName1: String,
-                dataValue1: String,
-                fieldName2: String,
-                dataValue2: String
+                addInfo:[]
             },
-            exceptionData: {
-                dataValue: String,
-                listValues: String
-            },
+            exceptionData: [],
             documents: [{ type: mongoose.Schema.ObjectId, ref: DocumentSchema }]
 
         }

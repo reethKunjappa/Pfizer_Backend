@@ -62,6 +62,8 @@ router.route("/labelling/configFileUpload").post(configController.configFileUplo
 router.route("/labelling/createCountryConfig").post(configController.createCountryConfig);
 router.route("/labelling/createRuleConfig").post(configController.createRuleConfig);
 router.route("/labelling/getAllConfig").post(configController.getAllConfig);
+router.route("/labelling/getPythonPayload").post(configController.getPythonPayload);
+
 
 
 
