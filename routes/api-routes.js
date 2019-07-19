@@ -51,18 +51,18 @@ router.post("/labelling/auditHistory", documentController.auditHistory);
 //MappingSpec
 router.post('/labelling/getMappingSpec', productlabelController.getMappingSpec);
 //Preferences
-router.post("/labelling/addRules", preferenceController.addRules);
+/* router.post("/labelling/addRules", preferenceController.addRules);
 router.post("/labelling/getAllRules", preferenceController.getAllRules);
 router.post("/labelling/updateRules", preferenceController.updateRules);
 router.post("/labelling/deleteRules", preferenceController.deleteRules);
-//router.post("/labelling/getRuleConfig", preferenceController.getRuleConfig);
+router.post("/labelling/getRuleConfig", preferenceController.getRuleConfig); */
 
 // File Upload for countryConfig
 router.route("/labelling/configFileUpload").post(configController.configFileUpload);
 router.route("/labelling/createCountryConfig").post(configController.createCountryConfig);
 router.route("/labelling/createRuleConfig").post(configController.createRuleConfig);
 router.route("/labelling/getAllConfig").post(configController.getAllConfig);
-router.route("/labelling/getPythonPayload").post(configController.getPythonPayload);
+//router.route("/labelling/getPythonPayload").post(configController.getPythonPayload);
 
 
 

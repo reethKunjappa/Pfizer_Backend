@@ -140,14 +140,16 @@ exports.getAllConfig = (req, res) => {
     })
 }
 
-exports.getPythonPayload = (req,res)=>{
+exports.getPythonPayload = (countryName)=>{
 
-    if (_.isEmpty(req.body.countryName))
+    if (_.isEmpty(countryName))
         return [];
-    return ruleConfigModel.aggregate([
-        { $match: { "rulesApplication.country.name": req.body.countryName } },
+   
+    return new Promise((resolve, reject) => {
+         ruleConfigModel.aggregate([
+             { $match: { "rulesApplication.country.name": countryName } },
             { $unwind: "$rulesApplication" },
-             { $match: { "rulesApplication.country.name": req.body.countryName } },
+             { $match: { "rulesApplication.country.name": countryName } },
         
             {
                 $project: {
@@ -158,9 +160,7 @@ exports.getPythonPayload = (req,res)=>{
                     sections:"$rulesApplication.sections.value",
                     section_selection:"$rulesApplication.sections.condition",
                     conflictType:"$action.conflictType",
-                    //additionalInformation: {$concatArrays: ["$additionalInformation.addInfo.label","$additionalInformation.addInfo.value"]} , 
                     additionalInformation:"$additionalInformation.addInfo",
-                    
                     "exceptionData": 1,
                     _id: 0
                 }
@@ -168,15 +168,15 @@ exports.getPythonPayload = (req,res)=>{
         ])
             .then(rule => {
                 console.log("Rule config: ", rule)
-                return res.json(responseGenerator(0, "Successfully get pythonPyload data: ", rule));
-                //resolve(rule)
+               // return res.json(responseGenerator(0, "Successfully get pythonPyload data: ", rule));
+                resolve(rule)
             })
             .catch(err => {
                 console.log(err.message);
-               // reject([])
-                res.json(
+                reject([])
+               /*  res.json(
                     responseGenerator(-1, "Unable to  get pythonPyload data", err)
-                );
+                ); */
             });
-    
+        })
 }

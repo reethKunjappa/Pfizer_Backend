@@ -15,7 +15,8 @@ var _ = require("lodash");
 require("mongoose").set("debug", true);
 var _compareAPICallCount = false;
 var currentProjName = null;
-var ruleController = require('../controllers/preference.controller');
+//var ruleController = require('../controllers/preference.controller');
+var configController = require('../controllers/config.controller');
 exports.newProject = (req, res, next) => {
     const { projectName, country, proprietaryName, createdBy } = req.body;
     var productLabel = new ProductLabel();
@@ -178,7 +179,7 @@ exports.compare = function (req, res) {
                 ) {
                     currentProjName = project.projectName;
                     return Promise.props({
-                        ruleConfig: ruleController.getRuleConfig(project.country.name)  //getting Rule config data 
+                        ruleConfig: configController.getPythonPayload(project.country.name)  //getting Rule config data 
                     }).then((data) => {
                         console.log(data)
                         var payload = {
