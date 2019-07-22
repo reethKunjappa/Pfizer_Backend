@@ -191,7 +191,7 @@ exports.compare = function (req, res) {
                             reference_filepath: [],
                             country_name: project.country.name,
                             project_id: project._id,
-                            rulesConfig: { result: data.ruleConfig }
+                            rulesConfig:  data.ruleConfig 
                         };
                         var basePath = path.resolve("./");
                         mapSpecApIPayload.project_id = project._id;
