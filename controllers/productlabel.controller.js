@@ -18,11 +18,12 @@ var currentProjName = null;
 //var ruleController = require('../controllers/preference.controller');
 var configController = require('../controllers/config.controller');
 exports.newProject = (req, res, next) => {
-    const { projectName, country, proprietaryName, createdBy } = req.body;
+    const { projectName, country, proprietaryName, drugName, createdBy } = req.body;
     var productLabel = new ProductLabel();
     productLabel.projectName = projectName;
     productLabel.country = country;
     productLabel.proprietaryName = proprietaryName;
+    productLabel.drugName = drugName;
     productLabel.createdBy = createdBy;
     productLabel.createdOn = new Date();
     productLabel.favorite = 0;
@@ -31,6 +32,7 @@ exports.newProject = (req, res, next) => {
         let inputValidationFields = {
             projectName: 'required',
             country: 'required',
+            drugName: 'required',
             proprietaryName:'required',
             createdBy: 'required'
         };
