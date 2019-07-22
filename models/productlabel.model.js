@@ -16,6 +16,10 @@ var ProductLabelSchema = new Schema({
     type:String,
     required:true
   },
+  drugName:{
+    type: String,
+    required: true
+  },
   createdBy: {
     type: Object,
     required: true

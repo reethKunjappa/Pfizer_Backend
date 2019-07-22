@@ -147,10 +147,9 @@ exports.getPythonPayload = (countryName)=>{
    
     return new Promise((resolve, reject) => {
          ruleConfigModel.aggregate([
-             { $match: { "rulesApplication.country.name": countryName } },
+            { $match: { $or: [{ "rulesApplication.country.name": countryName }, { "rulesApplication.global": true}]}},
             { $unwind: "$rulesApplication" },
-             { $match: { "rulesApplication.country.name": countryName } },
-        
+            { $match: { $or: [{ "rulesApplication.country.name": countryName }, { "rulesApplication.global": true }]}},
             {
                 $project: {
                     ruleName:'$rulesSetup.ruleName',
@@ -161,7 +160,7 @@ exports.getPythonPayload = (countryName)=>{
                     section_selection:"$rulesApplication.sections.condition",
                     conflictType:"$action.conflictType",
                     additionalInformation:"$additionalInformation.addInfo",
-                    "exceptionData": 1,
+                    exceptionData: 1,
                     _id: 0
                 }
             }
