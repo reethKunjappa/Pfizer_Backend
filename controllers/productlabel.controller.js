@@ -193,8 +193,10 @@ exports.compare = function (req, res) {
                             fontFormat_filepath: [],
                             reference_filepath: [],
                             country_name: project.country.name,
+                            proprietaryName: project.projectName,
+                            drugName: project.drugName,
                             project_id: project._id,
-                            rulesConfig:  data.ruleConfig 
+                            rulesConfig: data.ruleConfig 
                         };
                         var basePath = path.resolve("./");
                         mapSpecApIPayload.project_id = project._id;
