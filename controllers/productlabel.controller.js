@@ -2,6 +2,7 @@ var jwt = require("jsonwebtoken"); //for future purpose
 const { ProductLabel, DocumentSchema } = require("../models/model");
 var FavouriteSchema = require("../models/favourite.model");
 var ConflictComment = require("../models/conflict.model");
+var mappingSpecModel = require('../models/mappingSpec.model')
 var Audit = require("../models/audit.model");
 var { convertDocToPdf, responseGenerator, log, inputValidator } = require("../utility/commonUtils");
 var Promise = require("bluebird");
@@ -769,33 +770,19 @@ exports.commentAck = function (req, res) {
 
 
 exports.getMappingSpec = function (req, res) {
-
-    const options = {
-        uri: PYTHON_URL_MAPPING,
-        method: "POST",
-        json: true,
-        body: req.body,
-        headers: {
-            "Content-Type": "application/json"
-        }
-    };
     try {
-
         let inputValidationFields = {
-            label_filepath: 'required',
+            _id:'required'
         };
         inputValidator(req.body, inputValidationFields).then((result) => {
             if (!result.isValid) {
                 throw result.message;
             }
         }).then(() => {
-            return rp(options).then(function (response) {
                 return Promise.props({
-                    response: response,
+                    response: mappingSpecModel.find({project_id:req.body._id},{final_df:1}),
                     project: ProductLabel.findById(req.body._id)
-                })
-            })
-                .then(function (response) {
+                }).then(function (response) {
                     var audit = {
                         user: req.body.user,
                         description: 'Mapping Spec Genearted Successfully.',
@@ -803,7 +790,7 @@ exports.getMappingSpec = function (req, res) {
                         actionType: 'Generate Mapping Spec',
                     }
                     Audit.create(audit);
-                    return res.send({ result: response.response, status: { code: 0, message: "Get all Mapping Specs" } });
+                    return res.send({ result: response.response[0].final_df, status: { code: 0, message: "Get all Mapping Specs" } });
                 })
                 .catch(function (err) {
                     log.error({ err: err }, logMessage.unhandlederror);
