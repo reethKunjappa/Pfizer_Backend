@@ -33,8 +33,6 @@ exports.newProject = (req, res, next) => {
         let inputValidationFields = {
             projectName: 'required',
             country: 'required',
-            drugName: 'required',
-            proprietaryName:'required',
             createdBy: 'required'
         };
         inputValidator(req.body, inputValidationFields).then((result) => {
@@ -552,6 +550,8 @@ exports.commentAck = function (req, res) {
                     var grammarSpellingCount = 0;
                     var orderCount = 0;
                     var contentCount = 0;
+                    var regulatoryCount = 0;
+                    var configuredRulesCount = 0;
                     let totalConflictCount = 0;
                     comments.forEach(function (comment) {
                         if (comment.action == "ACCEPT") {
@@ -584,10 +584,15 @@ exports.commentAck = function (req, res) {
                             case "Content":
                                 contentCount++;
                                 break;
+                            case "Regulatory":
+                                regulatoryCount++;
+                                break;
+                            case "Configured rules":
+                                configuredRulesCount++;
+                                break;
                         };
-
                     });
-                    totalConflictCount = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount);
+                    totalConflictCount = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount + regulatoryCount + configuredRulesCount);
                     var updatedConflictTypes = [];
 
                     let fontObj = _.find(project.conflicts.types, ['key', 'font']);
@@ -613,8 +618,17 @@ exports.commentAck = function (req, res) {
                     project.conflicts.types[orderIndex].value -= orderCount;
                     let orderUpdatedObj = project.conflicts.types[orderIndex];
 
+                    let regulatoryObj = _.find(project.conflicts.types, ['key', 'regulatory']);
+                    let regulatoryIndex = project.conflicts.types.indexOf(regulatoryObj)
+                    project.conflicts.types[regulatoryIndex].value -= regulatoryCount;
+                    let regulatoryUpdatedObj = project.conflicts.types[regulatoryIndex];
 
-                    updatedConflictTypes.push(fontUpdatedObj, spellUpdatedObj, contentUpdatedObj, orderUpdatedObj)
+                    let configRulesObj = _.find(project.conflicts.types, ['key', 'configRules']);
+                    let configRulesIndex = project.conflicts.types.indexOf(configRulesObj)
+                    project.conflicts.types[configRulesIndex].value -= configuredRulesCount;
+                    let configRulesUpdatedObj = project.conflicts.types[configRulesIndex];
+
+                    updatedConflictTypes.push(fontUpdatedObj, spellUpdatedObj, contentUpdatedObj, orderUpdatedObj, regulatoryUpdatedObj, configRulesUpdatedObj)
                     return Promise.props({
                       accept_modified: ConflictComment.updateMany(
                         {

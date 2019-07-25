@@ -5,7 +5,8 @@ var countryConfigModel = require('../models/countryConfig.model')
 var ruleConfigModel = require('../models/rulesConfig.model')
 const { responseGenerator } = require("../utility/commonUtils");
 const appConfig = require("../config/appConfig");
-var { mkdir } = require("../utility/commonUtils");
+var { mkdir, inputValidator, log} = require("../utility/commonUtils");
+const { logMessage } = require('../config/appConfig');
 var uuid = require("uuid-v4");
 var _ = require("lodash");
 var fileUploadPath = "";
@@ -178,4 +179,34 @@ exports.getPythonPayload = (countryName)=>{
                 ); */
             });
         })
+}
+
+exports.deleteConfig = (req,res)=>{
+    try {
+        let inputValidationFields = {
+            _id: 'required',
+            configType: 'required'
+        };
+        inputValidator(req.body, inputValidationFields).then((result) => {
+            if (!result.isValid) {
+                throw result.message;
+            }
+        }).then(() => {
+            if(req.body.configType=="Country"){
+                countryConfigModel.deleteOne({_id:req.body._id}).then((rule)=>{
+                    return res.json(responseGenerator(0, "Successfully deleted country config: ", req.body));
+                })
+            }else{
+                ruleConfigModel.deleteOne({_id:req.body._id}).then(rule=>{
+                    return res.json(responseGenerator(0, "Successfully deleted rule config: ", req.body));
+                })
+            }
+        }).catch((err) => {
+            log.error({ err: err }, logMessage.validatationerror);
+            res.json(responseGenerator(-1, "Mandatory fields Missed", ""));
+        })
+    }catch(err){
+        log.error({ err: err }, logMessage.unhandlederror);
+        res.json(responseGenerator(-1, "Something went wrong", ""));
+    }
 }

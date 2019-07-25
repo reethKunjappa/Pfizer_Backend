@@ -13,12 +13,10 @@ var ProductLabelSchema = new Schema({
     required: true
   },
   proprietaryName:{
-    type:String,
-    required:true
+    type:String
   },
   drugName:{
-    type: String,
-    required: true
+    type: String
   },
   createdBy: {
     type: Object,
