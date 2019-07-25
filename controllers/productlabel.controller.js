@@ -596,39 +596,57 @@ exports.commentAck = function (req, res) {
                     var updatedConflictTypes = [];
 
                     let fontObj = _.find(project.conflicts.types, ['key', 'font']);
-                    let fontIndex = project.conflicts.types.indexOf(fontObj)
-                    project.conflicts.types[fontIndex].value -= fontSizeCount;
-                    let fontUpdatedObj = project.conflicts.types[fontIndex];
+                    if(fontObj!=undefined){
+                        let fontIndex = project.conflicts.types.indexOf(fontObj)
+                        project.conflicts.types[fontIndex].value -= fontSizeCount;
+                        let fontUpdatedObj = project.conflicts.types[fontIndex];
+                        updatedConflictTypes.push(fontUpdatedObj)
 
+                    }
+                    
 
+                    
                     let fontspellGrammerObj = _.find(project.conflicts.types, ['key', 'spell']);
-                    let fontspellGrammerIndex = project.conflicts.types.indexOf(fontspellGrammerObj)
-                    project.conflicts.types[fontspellGrammerIndex].value -= grammarSpellingCount;
-                    let spellUpdatedObj = project.conflicts.types[fontspellGrammerIndex];
+                    if(fontspellGrammerObj!=undefined){
+                        let fontspellGrammerIndex = project.conflicts.types.indexOf(fontspellGrammerObj)
+                        project.conflicts.types[fontspellGrammerIndex].value -= grammarSpellingCount;
+                        let spellUpdatedObj = project.conflicts.types[fontspellGrammerIndex];
+                        updatedConflictTypes.push(spellUpdatedObj)
+                    }
+                    
 
                     let contentObj = _.find(project.conflicts.types, ['key', 'content']);
-                    let contentIndex = project.conflicts.types.indexOf(contentObj)
-                    project.conflicts.types[contentIndex].value -= contentCount;
-                    let contentUpdatedObj = project.conflicts.types[contentIndex];
-
-
-
+                    if(contentObj!=undefined){
+                        let contentIndex = project.conflicts.types.indexOf(contentObj)
+                        project.conflicts.types[contentIndex].value -= contentCount;
+                        let contentUpdatedObj = project.conflicts.types[contentIndex];
+                        updatedConflictTypes.push(contentUpdatedObj)
+                    }
+                
                     let orderObj = _.find(project.conflicts.types, ['key', 'order']);
-                    let orderIndex = project.conflicts.types.indexOf(orderObj)
-                    project.conflicts.types[orderIndex].value -= orderCount;
-                    let orderUpdatedObj = project.conflicts.types[orderIndex];
-
+                    if(orderObj!=undefined){
+                        let orderIndex = project.conflicts.types.indexOf(orderObj)
+                        project.conflicts.types[orderIndex].value -= orderCount;
+                        let orderUpdatedObj = project.conflicts.types[orderIndex];
+                        updatedConflictTypes.push(orderUpdatedObj)
+                    }
+                    
                     let regulatoryObj = _.find(project.conflicts.types, ['key', 'regulatory']);
-                    let regulatoryIndex = project.conflicts.types.indexOf(regulatoryObj)
-                    project.conflicts.types[regulatoryIndex].value -= regulatoryCount;
-                    let regulatoryUpdatedObj = project.conflicts.types[regulatoryIndex];
-
+                    if(regulatoryObj!=undefined){
+                        let regulatoryIndex = project.conflicts.types.indexOf(regulatoryObj)
+                        project.conflicts.types[regulatoryIndex].value -= regulatoryCount;
+                        let regulatoryUpdatedObj = project.conflicts.types[regulatoryIndex];
+                        updatedConflictTypes.push(regulatoryUpdatedObj)
+                    }
+                    
                     let configRulesObj = _.find(project.conflicts.types, ['key', 'configRules']);
-                    let configRulesIndex = project.conflicts.types.indexOf(configRulesObj)
-                    project.conflicts.types[configRulesIndex].value -= configuredRulesCount;
-                    let configRulesUpdatedObj = project.conflicts.types[configRulesIndex];
-
-                    updatedConflictTypes.push(fontUpdatedObj, spellUpdatedObj, contentUpdatedObj, orderUpdatedObj, regulatoryUpdatedObj, configRulesUpdatedObj)
+                    if(configRulesObj!=undefined){
+                        let configRulesIndex = project.conflicts.types.indexOf(configRulesObj)
+                        project.conflicts.types[configRulesIndex].value -= configuredRulesCount;
+                        let configRulesUpdatedObj = project.conflicts.types[configRulesIndex];
+                        updatedConflictTypes.push(configRulesUpdatedObj)
+                    }
+                
                     return Promise.props({
                       accept_modified: ConflictComment.updateMany(
                         {
