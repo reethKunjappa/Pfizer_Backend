@@ -146,7 +146,7 @@ exports.compare = function (req, res) {
         return res.json(
             responseGenerator(
                 -1,
-                "Currently serving:  " + currentProjName + " ,  request, Please try after some time!"
+                "Your labels("+currentProjName+") are still being analysed. Please try after sometime!"
             )
         );
 
@@ -489,9 +489,7 @@ exports.commentAck = function (req, res) {
                       return res.json(
                         responseGenerator(
                           -1,
-                          "Currently serving:  " +
-                            currentProjName +
-                            " ,  request, Please try after some time!"
+                            "Your labels(" + currentProjName + ") are still being analysed. Please try after sometime!"
                         )
                     );
     try {
