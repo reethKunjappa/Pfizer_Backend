@@ -145,7 +145,7 @@ exports.compare = function (req, res) {
     if (_compareAPICallCount)
         return res.json(
             responseGenerator(
-                -1,
+                -2,
                 "Your labels("+currentProjName+") are still being analysed. Please try after sometime!"
             )
         );
@@ -488,7 +488,7 @@ exports.commentAck = function (req, res) {
     if (_compareAPICallCount)
                       return res.json(
                         responseGenerator(
-                          -1,
+                          -2,
                             "Your labels(" + currentProjName + ") are still being analysed. Please try after sometime!"
                         )
                     );
