@@ -573,6 +573,9 @@ exports.commentAck = function (req, res) {
                             case "Text Alignment":
                                 fontSizeCount++;
                                 break;
+                            case "Formatting":
+                                fontSizeCount++;
+                                break;
                             case "Spell and Grammar":
                                 grammarSpellingCount++;
                                 break;
