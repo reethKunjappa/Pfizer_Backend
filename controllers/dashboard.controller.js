@@ -3,7 +3,7 @@ const ConflictShcema =  require('../models/conflict.model')
 const FavouriteSchema = require('../models/favourite.model')
 const { responseGenerator, inputValidator, log } = require('../utility/commonUtils');
 const v = require('node-input-validator');
-
+var _ = require("lodash");
 
 exports.getAllProjects = function (req, res) {
     try {
@@ -93,6 +93,31 @@ exports.getCount = (req, res, next) => {
                         }
                         getModalAggregation(element.value,type).then((data)=>{
                             responseObject[propertyName] = data;
+                            //Remov all conflcyType category: "Font". and sum of all count conflict then make one obj {_id:"Font", count:"Summ of all conflict type category:"Font"} 
+                            let fontCount=0;
+                            if(responseObject.conflictTypeCount!=undefined){
+                                responseObject.conflictTypeCount.forEach(function(conflictType){
+                                    switch(conflictType._id){
+                                        case "Font Size":
+                                            fontCount += conflictType.count
+                                            break;
+                                        case "Font Name":
+                                            fontCount += conflictType.count
+                                            break;
+                                        case "Text Alignment":
+                                            fontCount += conflictType.count
+                                            break;
+                                        case "Font Colour":
+                                            fontCount += conflictType.count
+                                            break;
+                                        case "Formatting":
+                                            fontCount += conflictType.count
+                                            break;
+                                    }
+                                })
+                                responseObject.conflictTypeCount.push({_id:"Font", count:fontCount})
+                                _.pullAllBy(responseObject.conflictTypeCount, [{ _id: 'Font Size' }, { _id: 'Font Name' }, { _id: 'Text Alignment' }, { _id: 'Font Colour' }, { _id: 'Formatting'}],'_id');
+                            }
                         }).catch((err)=>{
 
                         });
