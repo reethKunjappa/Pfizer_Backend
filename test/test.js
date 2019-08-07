@@ -262,7 +262,6 @@ describe("Favorite", () => {
         res.body.result._id.should.be.a("string");
         done();
       });
-    console.log(_id);
   });
   it("It should unMark current proj from fav list", done => {
     let req = {
@@ -769,7 +768,7 @@ describe("Country Config", () => {
   });
 });
 
-describe('Review Label',()=>{
+ describe('Review Label',()=>{
     it('It should generate conflicts',(done)=>{
     
         let req = {
@@ -850,7 +849,7 @@ describe('Accept/Reject comments',()=>{
              done();
            });
     })
-})
+}) 
 
 
 describe('View conflicts', () => {
@@ -879,7 +878,6 @@ describe('View conflicts', () => {
                 res.body.result.project.createdBy.should.be.a('object');
                 res.body.result.comments.should.be.a('array');
                 res.body.totalRecords.should.be.a('number');
-                console.log(res.body)
                 done()
             })
     })
@@ -934,6 +932,7 @@ describe("Audit/History", () => {
         res.body.status.should.have.property("message");
         res.body.status.message.should.be.a("string");
         res.body.result.should.be.a("array");
+       // console.log(res.body)
         done();
       });
   });

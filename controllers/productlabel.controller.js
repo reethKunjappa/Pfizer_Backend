@@ -142,13 +142,13 @@ var startTime = new Date();
 var pythonStartTime = new Date();
 exports.compare = function (req, res) {
     log.info({ req: req.body }, "Conflict/Compare called");
-    if (_compareAPICallCount)
+    /* if (_compareAPICallCount)
         return res.json(
             responseGenerator(
                 -2,
                 "Your labels("+currentProjName+") are still being analysed. Please try after sometime!"
-            )
-        );
+            ) 
+        );*/
 
     startTime = new Date();
     var project = {};
@@ -367,12 +367,12 @@ exports.compare = function (req, res) {
             .catch(function (err) {
                 log.error({ err: err }, logMessage.unhandlederror);
                 _compareAPICallCount = false;
-                return res.json(
+                /* return res.json(
                     responseGenerator(
                         -1,
                         err.message
                     )
-                );
+                ); */
 
             });
     }).catch((err) => {
