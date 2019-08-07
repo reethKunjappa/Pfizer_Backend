@@ -6,7 +6,7 @@ const { responseGenerator } = require('../utility/commonUtils');
 // Create user
 exports.new = function (req, res) {
     if (!req.body.username || !req.body.password) {
-        res.json(responseGenerator(-1, "Username and Password are mandatory !!", err));
+        res.json(responseGenerator(-1, "Username and Password are mandatory !!"));
     } else {
         var user = new User();
         user.username = req.body.username;

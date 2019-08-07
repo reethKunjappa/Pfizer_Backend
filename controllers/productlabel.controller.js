@@ -549,7 +549,6 @@ exports.commentAck = function (req, res) {
                     var orderCount = 0;
                     var contentCount = 0;
                     var regulatoryCount = 0;
-                    var configuredRulesCount = 0;
                     let totalConflictCount = 0;
                     comments.forEach(function (comment) {
                         if (comment.action == "ACCEPT") {
@@ -588,12 +587,10 @@ exports.commentAck = function (req, res) {
                             case "Regulatory":
                                 regulatoryCount++;
                                 break;
-                            case "Configured rules":
-                                configuredRulesCount++;
-                                break;
+                            
                         };
                     });
-                    totalConflictCount = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount + regulatoryCount + configuredRulesCount);
+                    totalConflictCount = project.conflicts.total - (fontSizeCount + grammarSpellingCount + orderCount + contentCount + regulatoryCount);
                     var updatedConflictTypes = [];
 
                     let fontObj = _.find(project.conflicts.types, ['key', 'font']);
@@ -604,9 +601,7 @@ exports.commentAck = function (req, res) {
                         updatedConflictTypes.push(fontUpdatedObj)
 
                     }
-                    
 
-                    
                     let fontspellGrammerObj = _.find(project.conflicts.types, ['key', 'spell']);
                     if(fontspellGrammerObj!=undefined){
                         let fontspellGrammerIndex = project.conflicts.types.indexOf(fontspellGrammerObj)
@@ -639,15 +634,7 @@ exports.commentAck = function (req, res) {
                         let regulatoryUpdatedObj = project.conflicts.types[regulatoryIndex];
                         updatedConflictTypes.push(regulatoryUpdatedObj)
                     }
-                    
-                    let configRulesObj = _.find(project.conflicts.types, ['key', 'configRules']);
-                    if(configRulesObj!=undefined){
-                        let configRulesIndex = project.conflicts.types.indexOf(configRulesObj)
-                        project.conflicts.types[configRulesIndex].value -= configuredRulesCount;
-                        let configRulesUpdatedObj = project.conflicts.types[configRulesIndex];
-                        updatedConflictTypes.push(configRulesUpdatedObj)
-                    }
-                
+            
                     return Promise.props({
                       accept_modified: ConflictComment.updateMany(
                         {
