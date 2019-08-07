@@ -437,7 +437,7 @@ describe("Document", () => {
         .post(
           "/api/labelling/upload?projectId=" +
             _id +
-            "&uploadedBy={%22email%22:%22tester1@pfizer.com%22,%22name%22:%22Tester%20Pfizer%201%22,%22userId%22:%22tester1%22}&fileType=HA%20Guidelines"
+            "&uploadedBy={%22email%22:%22tester1@pfizer.com%22,%22name%22:%22Tester%20Pfizer%201%22,%22userId%22:%22tester1%22}&fileType=Label"
         )
         .field("name", "files")
         .attach(
@@ -485,7 +485,7 @@ describe("Document", () => {
         .post(
           "/api/labelling/upload?projectId=" +
             _id +
-            "&uploadedBy={%22email%22:%22tester1@pfizer.com%22,%22name%22:%22Tester%20Pfizer%201%22,%22userId%22:%22tester1%22}&fileType=HA%20Guidelines"
+            "&uploadedBy={%22email%22:%22tester1@pfizer.com%22,%22name%22:%22Tester%20Pfizer%201%22,%22userId%22:%22tester1%22}&fileType=Reference"
         )
         .field("name", "files")
         .attach(
@@ -582,7 +582,7 @@ describe("Document", () => {
         .post(
           "/api/labelling/upload?projectId=" +
             _id +
-            "&uploadedBy={%22email%22:%22tester1@pfizer.com%22,%22name%22:%22Tester%20Pfizer%201%22,%22userId%22:%22tester1%22}&fileType=HA%20Guidelines"
+            "&uploadedBy={%22email%22:%22tester1@pfizer.com%22,%22name%22:%22Tester%20Pfizer%201%22,%22userId%22:%22tester1%22}&fileType=Font%20Format%20Spec"
         )
         .field("name", "files")
         .attach(

@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "nyc mocha --timeout 10000 test/test.js",
+    "test": "nyc mocha --timeout 100000 test/test.js",
     "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test"
   },
   "author": "Nagesh Jha",
@@ -16,7 +16,6 @@
     "bunyan": "^1.8.12",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
-    "cypress": "^3.4.1",
     "docx-pdf": "0.0.1",
     "dotenv": "^6.2.0",
     "eslint": "^6.0.1",
