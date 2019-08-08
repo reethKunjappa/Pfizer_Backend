@@ -3,14 +3,14 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('../server');
 const should = chai.should();
+chai.use(chaiHttp);
 const path = require('path') 
 let currentProjPath = path.resolve("./");
-
+//global var 
 var _id = "";
 var _pId= "";
 var commentsToPass=[]
 var confComments;
-chai.use(chaiHttp);
 
 
 describe('Check Login', () => {
@@ -51,7 +51,6 @@ describe('Check Login', () => {
     })
 
 })
-
 describe("Projects", () => {
   var randomA = Math.floor(Math.random() * 100);
   var rendomB = Math.floor(Math.random() * 1000);
@@ -59,8 +58,8 @@ describe("Projects", () => {
     it("Should create project with all optional and mandatory fields ", done => {
       let req = {
         country: {
-          id: "../../assets/countryFlags/bosnia_and_herzegovina.gif",
-          name: "Bosnia"
+          id: "../../assets/countryFlags/saudi_arabia.gif",
+          name: "Saudi Arabia"
         },
         createdBy: {
           email: "tester1@pfizer.com",
@@ -444,7 +443,7 @@ describe("Document", () => {
         .attach(
           "files",
           currentProjPath +
-            "/files_for_testing/1. Label - Neurontin (gabapentin) capsules SPC_English_ALR.docx"
+            "/files_for_testing/1. Label - NORGESTIMATE AND ETHINYL ESTRADIOL Sep 2017.docx"
         )
         .send(req2)
 
@@ -492,7 +491,7 @@ describe("Document", () => {
         .attach(
           "files",
           currentProjPath +
-            "/files_for_testing/1.2. Ref - Reg SPC NN 28_0 300mg UK_ALR.docx"
+            "/files_for_testing/1. Ref - OrthoCyclen Aug 2017.docx"
         )
         .send(req2)
 
@@ -539,8 +538,7 @@ describe("Document", () => {
         .field("name", "files")
         .attach(
           "files",
-          currentProjPath +
-            "/files_for_testing/0. HA - QRD-product-information-annotated-template-english-version-10_en.pdf"
+          currentProjPath + "/files_for_testing/SmPC_HA_Guidlines.pdf"
         )
         .send(req2)
 
@@ -588,7 +586,8 @@ describe("Document", () => {
         .field("name", "files")
         .attach(
           "files",
-          currentProjPath + "/files_for_testing/0. QRD format rules.pdf"
+          currentProjPath +
+            "/files_for_testing/QRD_Font_Format_Template.pdf"
         )
         .send(req2)
 
@@ -768,7 +767,6 @@ describe("Country Config", () => {
       });
   });
 });
-
  describe('Review Label',()=>{
     it('It should generate conflicts',(done)=>{
     
@@ -813,7 +811,6 @@ describe("Country Config", () => {
     })
     
 })
-
 describe('Accept/Reject comments',()=>{
     it('It should accept/reject comments of type Content',(done)=>{
       console.log("***************** Inside Accept/reject *****************")
@@ -857,8 +854,6 @@ describe('Accept/Reject comments',()=>{
            });
     })
 }) 
-
-
 describe('View conflicts', () => {
     it('Should get conflicts data', (done) => {
         let req = {
@@ -889,7 +884,28 @@ describe('View conflicts', () => {
             })
     })
 })
-
+describe("Generate mapping spec", () => {
+  it("Should generate mapping spec", done => {
+    let req = {
+      _id: _id
+    };
+    chai
+      .request(server)
+      .post("/api/labelling/getMappingSpec")
+      .send(req)
+      .end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a("object");
+        res.body.should.have.property("status");
+        res.body.status.should.have.property("code").eql(0);
+        res.body.status.should.have.property("message");
+        res.body.status.message.should.be.a("string");
+        res.body.result.should.be.a("array");
+        res.body.result.should.not.be.empty;
+        done();
+      });
+  });
+});
 describe("Get dashboard", () => {
   it("Should get all dashboard data", done => {
     let req = {
@@ -921,8 +937,6 @@ describe("Get dashboard", () => {
       });
   });
 });
-
-
 describe("Audit/History", () => {
   it("It should get Audit/Hostory based on project ID", done => {
     let req = {
