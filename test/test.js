@@ -70,7 +70,7 @@ describe("Projects", () => {
         documents: [],
         drugName: "Test",
         projectName:
-          "Nagesh-Test-" +
+          "Sanity-Automation-" +
           Math.floor(Math.random() * 100) +
           "-" +
           Math.floor(Math.random() * 100),
