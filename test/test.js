@@ -8,7 +8,8 @@ let currentProjPath = path.resolve("./");
 
 var _id = "";
 var _pId= "";
-var comments=[]
+var commentsToPass=[]
+var confComments;
 chai.use(chaiHttp);
 
 
@@ -213,7 +214,7 @@ describe("Projects", () => {
   });
 });
 describe("Favorite", () => {
-  it("It should unMark current proj from fav list", done => {
+  it("It should get all user fav project" , done => {
     let req = {
       user: {
         email: "admin@pfizer.com",
@@ -794,26 +795,32 @@ describe("Country Config", () => {
              res.body.result.project.projectName.should.be.a("string");
              res.body.result.project.country.should.be.a("object");
              res.body.result.project.createdBy.should.be.a("object");
-             res.body.result.comments.should.be.a("array");
-             res.body.totalRecords.should.be.a("number");
-             confComments = req.body.result.comments;
+             //res.body.result.comments.should.be.a("array");
+            // res.body.totalRecords.should.be.a("number");
+             confComments = res.body.result.comments;
+
              confComments.forEach((data)=>{
-                if(data.conflict_type==="Order"){
+                if(data.conflict_type=="Text Alignment"){
                     data.action="ACCEPT"
-                    comments.push(data)
+                    data._deleted=true
+                    commentsToPass.push(data)
                 }
              })
+             console.log("commentsToPass")
+            console.log(commentsToPass)
              done();
            });
     })
+    
 })
 
 describe('Accept/Reject comments',()=>{
-    it('It should accept/reject comments of type order',(done)=>{
-
+    it('It should accept/reject comments of type Content',(done)=>{
+      console.log("***************** Inside Accept/reject *****************")
+        console.log(commentsToPass)
         let req = {
           commentAction: { action: "accept/reject", type: "" },
-          comments: comments,
+          comments: commentsToPass,
           projectId:_id,
           user: {
             email: "tester1@pfizer.com",
