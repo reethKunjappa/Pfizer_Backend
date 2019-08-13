@@ -7,8 +7,10 @@ chai.use(chaiHttp);
 const path = require('path') 
 let currentProjPath = path.resolve("./");
 //global var 
-var _id = "";
-var _pId= "";
+var _id   = "";
+var _pId  = "";
+var _did  =""
+var _rdid = "";
 var commentsToPass=[]
 var confComments;
 
@@ -102,7 +104,7 @@ describe("Projects", () => {
           res.body.result.proprietaryName.should.be.a("string");
           res.body.result.updatedAt.should.be.a("string");
           res.body.result._id.should.be.a("string");
-          _id = res.body.result._id;
+          _pId = res.body.result._id;
           done();
         });
     });
@@ -110,8 +112,8 @@ describe("Projects", () => {
     it("Should create project only with mandatory fields ", done => {
       let req = {
         country: {
-          id: "../../assets/countryFlags/bosnia_and_herzegovina.gif",
-          name: "Bosnia"
+          id: "../../assets/countryFlags/saudi_arabia.gif",
+          name: "Saudi Arabia"
         },
         createdBy: {
           email: "tester1@pfizer.com",
@@ -120,7 +122,7 @@ describe("Projects", () => {
         },
         createdOn: "",
         documents: [],
-        projectName: "Nagesh-Test-" + randomA + "-" + rendomB
+        projectName: "Sanity-Automation-" + randomA + "-" + rendomB
       };
 
       chai
@@ -146,7 +148,7 @@ describe("Projects", () => {
           res.body.result.projectName.should.be.a("string");
           res.body.result.updatedAt.should.be.a("string");
           res.body.result._id.should.be.a("string");
-          _pId = res.body.result._id;
+          _id = res.body.result._id;
           done();
         });
     });
@@ -164,7 +166,7 @@ describe("Projects", () => {
         },
         createdOn: "",
         documents: [],
-        projectName: "Nagesh-Test-" + randomA + "-" + rendomB
+        projectName: "Sanity-Automation-" + randomA + "-" + rendomB
       };
 
       chai
@@ -292,6 +294,7 @@ describe("Favorite", () => {
   });
 });
 describe("Document", () => {
+  describe('Upload documents for testing',()=>{
   it("Should upload file", done => {
     let req2 = {
       projectId: _pId,
@@ -337,7 +340,7 @@ describe("Document", () => {
         res.body.result.uploadedDate.should.be.a("string");
         res.body.result._deleted.should.be.a("boolean").eql(false);
         res.body.result._id.should.be.a("string");
-        _did = res.body.result.documentid;
+        _did = res.body.result._id;
         done();
       });
   });
@@ -355,7 +358,7 @@ describe("Document", () => {
     chai
       .request(server)
       .post(
-        "/api/labelling/upload?projectId=" +
+        "/api/labelling/re-upload?projectId=" +
           _pId +
           "&uploadedBy={%22email%22:%22tester1@pfizer.com%22,%22name%22:%22Tester%20Pfizer%201%22,%22userId%22:%22tester1%22}&fileType=Font%20Format%20Spec&documentId=" +
           _did
@@ -420,7 +423,7 @@ describe("Document", () => {
         done();
       });
   });
-
+})
   describe("Upload documents for sanity", () => {
     it("It should upload label file", done => {
       let req2 = {
@@ -443,7 +446,7 @@ describe("Document", () => {
         .attach(
           "files",
           currentProjPath +
-            "/files_for_testing/1. Label - NORGESTIMATE AND ETHINYL ESTRADIOL Sep 2017.docx"
+            "/files_for_testing/Saudi arabia_ Lorbrena_ 100 mg and 25 mg_ Tablets _LPD .docx"
         )
         .send(req2)
 
@@ -491,7 +494,7 @@ describe("Document", () => {
         .attach(
           "files",
           currentProjPath +
-            "/files_for_testing/1. Ref - OrthoCyclen Aug 2017.docx"
+            "/files_for_testing/USPI-LORBRENA-lorlatinib-tablets.docx"
         )
         .send(req2)
 
@@ -538,7 +541,8 @@ describe("Document", () => {
         .field("name", "files")
         .attach(
           "files",
-          currentProjPath + "/files_for_testing/SmPC_HA_Guidlines.pdf"
+          currentProjPath +
+            "/files_for_testing/Saudi Reg TemplateSPC-PIL-Labeling.pdf"
         )
         .send(req2)
 
@@ -587,7 +591,7 @@ describe("Document", () => {
         .attach(
           "files",
           currentProjPath +
-            "/files_for_testing/QRD_Font_Format_Template.pdf"
+            "/files_for_testing/Saudi Reg TemplateSPC-PIL-Labeling.pdf"
         )
         .send(req2)
 
@@ -767,7 +771,7 @@ describe("Country Config", () => {
       });
   });
 });
- describe('Review Label',()=>{
+/*  describe('Review Label',()=>{
     it('It should generate conflicts',(done)=>{
     
         let req = {
@@ -905,7 +909,7 @@ describe("Generate mapping spec", () => {
         done();
       });
   });
-});
+}); */
 describe("Get dashboard", () => {
   it("Should get all dashboard data", done => {
     let req = {
@@ -953,7 +957,7 @@ describe("Audit/History", () => {
         res.body.status.should.have.property("message");
         res.body.status.message.should.be.a("string");
         res.body.result.should.be.a("array");
-       // console.log(res.body)
+        console.log(res.body)
         done();
       });
   });
