@@ -4,7 +4,7 @@ const FavouriteSchema = require('../models/favourite.model')
 const { responseGenerator, inputValidator, log } = require('../utility/commonUtils');
 const v = require('node-input-validator');
 var _ = require("lodash");
-
+/* 
 exports.getAllProjects = function (req, res) {
     try {
         log.info("Get all projects api called");
@@ -17,7 +17,7 @@ exports.getAllProjects = function (req, res) {
     } catch (e) {
         console.log(e);
     }
-};
+}; */
 
 let modalNames = [{key:"projectCount",value: ProductLabel},
                 {key:"documentsCount",value:DocumentSchema},

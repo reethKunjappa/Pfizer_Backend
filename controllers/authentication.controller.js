@@ -1,4 +1,4 @@
-var jwt = require('jsonwebtoken');
+/* var jwt = require('jsonwebtoken');
 var config = require('../config/database');
 const { User } = require('../models/model');
 const { responseGenerator } = require('../utility/commonUtils');
@@ -61,3 +61,4 @@ exports.signin = function (req, res) {
 
 };
 
+ */

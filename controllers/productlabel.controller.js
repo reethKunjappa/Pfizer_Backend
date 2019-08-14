@@ -806,11 +806,12 @@ exports.getMappingSpec = function (req, res) {
                     project: ProductLabel.findById(req.body._id)
                 }).then(function (response) {
                     var audit = {
-                        user: req.body.user,
-                        description: 'Mapping Spec Genearted Successfully.',
-                        project: response.project,
-                        actionType: 'Generate Mapping Spec',
-                    }
+                      user: response.project.createdBy,
+                      description:
+                        "Mapping Spec Genearted Successfully.",
+                      project: response.project,
+                      actionType: "Generate Mapping Spec"
+                    };
                     Audit.create(audit);
                     return res.send({ result: response.response[0].final_df, status: { code: 0, message: "Get all Mapping Specs" } });
                 })

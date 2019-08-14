@@ -47,7 +47,7 @@ exports.configFileUpload = function (req, res) {
                         fileVirtualPath + "/" + documentId + "/" + file[i].originalname;
                         documentSchema.location = fileUploadPath;
                         documentSchema.documentid = documentId;
-                        documentSchema.countryConfig_id = req.query.projectId;
+                        documentSchema.countryConfig_id = req.query.projectId; //projectId is newly created rules mongoId
                         documentSchema.uploadedBy = JSON.parse(req.query.uploadedBy);
                         documentSchema.fileType = req.query.fileType;
                         documentSchema.save(function (err) {

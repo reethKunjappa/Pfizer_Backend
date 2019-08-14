@@ -4,8 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "nyc mocha --timeout 100000 --reporter mocha-simple-html-reporter --reporter-options output=report.html",
-    "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test"
+    "test": "nyc mocha --timeout 100000 --reporter mocha-simple-html-reporter --reporter-options output=report.html ",
+    "coverage": "nyc --reporter=lcov --reporter=text-lcov npm run test"
   },
   "author": "Nagesh Jha",
   "license": "ISC",

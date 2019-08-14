@@ -38,7 +38,7 @@ module.exports.getAll = function (req, res, next) {
         });
 }
 
-module.exports.update = function (req, res, next) {
+/* module.exports.update = function (req, res, next) {
     var body = req.body;
     return Favourite.findById(req.params.id)
         .then(function (favourite) {
@@ -53,7 +53,7 @@ module.exports.update = function (req, res, next) {
             console.error(err);
             return res.status(400).send({ success: false, err: err.message });
         });
-}
+} */
 
 module.exports.delete = function (req, res, next) {
     var query = req.body;

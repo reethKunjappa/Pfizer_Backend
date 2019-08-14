@@ -1,4 +1,4 @@
-var JwtStrategy = require('passport-jwt').Strategy,
+/* var JwtStrategy = require('passport-jwt').Strategy,
     ExtractJwt = require('passport-jwt').ExtractJwt;
 
 // load up the user model
@@ -21,4 +21,4 @@ module.exports = function (passport) {
             }
         });
     }));
-};
+}; */

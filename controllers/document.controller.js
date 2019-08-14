@@ -250,7 +250,7 @@ function checkForOldDocuments(files, reqQuery, callback) {
     })
 }
 
-exports.viewDocument = function (req, res) {
+/* exports.viewDocument = function (req, res) {
     try {
         DocumentSchema.findOne({ _id: req.body._id }).exec(function (err, projects) {
             if (err)
@@ -262,7 +262,7 @@ exports.viewDocument = function (req, res) {
         console.log(e);
     }
 };
-
+ */
 function updateProjectLabelInfo(req, resp, document, projectId, newDocId, isNew) {
     ProductLabel.findOne({ _id: projectId }).exec(function (err, project) {
         if (err)

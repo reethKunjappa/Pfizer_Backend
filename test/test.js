@@ -13,46 +13,8 @@ var _did  =""
 var _rdid = "";
 var commentsToPass=[]
 var confComments;
+var sanity_labelfile_id=""
 
-
-describe('Check Login', () => {
-
-    it("It should login with valid credentials", (done) => {
-        let req = {
-            username: "Nagesh",
-            password: "admin"
-        }
-        chai.request(server)
-            .post('/api/signin')
-            .send(req)
-            .end((err, res) => {
-                res.should.have.status(200);
-                res.body.should.be.a('object');
-                res.body.should.have.property('status');
-                res.body.status.should.have.property('code').eql(0);
-                done()
-            })
-
-    })
-    it("It should not login with Invalid credentials", (done) => {
-        let req = {
-            username: "Nageshs",
-            password: "admin"
-        }
-        chai.request(server)
-            .post('/api/signin')
-            .send(req)
-            .end((err, res) => {
-                res.should.have.status(200);
-                res.body.should.be.a('object');
-                res.body.should.have.property('status');
-                res.body.status.should.have.property('code').eql(-1);
-                done()
-            })
-
-    })
-
-})
 describe("Projects", () => {
   var randomA = Math.floor(Math.random() * 100);
   var rendomB = Math.floor(Math.random() * 1000);
@@ -156,8 +118,8 @@ describe("Projects", () => {
     it("Should not create dublicate project", done => {
       let req = {
         country: {
-          id: "../../assets/countryFlags/bosnia_and_herzegovina.gif",
-          name: "Bosnia"
+          id: "../../assets/countryFlags/saudi_arabia.gif",
+          name: "Saudi Arabia"
         },
         createdBy: {
           email: "tester1@pfizer.com",
@@ -470,6 +432,7 @@ describe("Document", () => {
           res.body.result.uploadedDate.should.be.a("string");
           res.body.result._deleted.should.be.a("boolean").eql(false);
           res.body.result._id.should.be.a("string");
+          sanity_labelfile_id = res.body.result._id;
           done();
         });
     });
@@ -681,6 +644,41 @@ describe("Rules Config", () => {
         res.body.result.rulesSetup.should.be.a("object");
         res.body.result._id.should.be.a("string");
         _r_id = res.body.result._id;
+        done();
+      });
+  });
+  it("Should upload file for rules config", done => {
+    chai
+      .request(server)
+      .post(
+        "/api/labelling/configFileUpload?projectId=" +
+          _r_id +
+          "&uploadedBy={%22email%22:%22tester1@pfizer.com%22,%22name%22:%22Tester%20Pfizer%201%22,%22userId%22:%22tester1%22}&fileType=Reference"
+      )
+      .field("name", "files")
+      .attach(
+        "files",
+        currentProjPath +
+          "/files_for_testing/1. Ref - OrthoCyclen Aug 2017.docx"
+      )
+      .send()
+      .end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a("object");
+        res.body.should.have.property("status");
+        res.body.status.should.have.property("code").eql(0);
+        res.body.status.should.have.property("message");
+        res.body.status.message.should.be.a("string");
+        res.body.result.created_at.should.be.a("string");
+        res.body.result.destination.should.be.a("string");
+        res.body.result.documentName.should.be.a("string");
+        res.body.result.documentid.should.be.a("string");
+        res.body.result.fileType.should.be.a("string");
+        res.body.result.location.should.be.a("string");
+        res.body.result.updated_at.should.be.a("string");
+        res.body.result.uploadedDate.should.be.a("string");
+        res.body.result._deleted.should.be.a("boolean").eql(false);
+        res.body.result._id.should.be.a("string");
         done();
       });
   });
@@ -910,6 +908,37 @@ describe("Generate mapping spec", () => {
       });
   });
 }); */
+
+describe('QC Report',()=>{
+
+  it('It should get checkList data',(done)=>{
+    let req = {
+      project_id: _id,
+      file_id: sanity_labelfile_id,
+      user: {
+        email: "tester1@pfizer.com",
+        name: "Tester Pfizer 1",
+        userId: "tester1"
+      } 
+    };
+    chai.request(server).post("/api/checkList").send(req)
+      .end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a("object");
+        res.body.should.have.property("status");
+        res.body.status.should.have.property("code").eql(0);
+        res.body.status.should.have.property("message");
+        res.body.status.message.should.be.a("string");
+        res.body.result.should.be.a("array");
+        res.body.result.checks.should.be.a("array");
+        res.body.result.file_id.should.be.a("string");
+        res.body.result.project_id.should.be.a("string");
+        done();
+      });
+
+  })
+})
+
 describe("Get dashboard", () => {
   it("Should get all dashboard data", done => {
     let req = {
