@@ -226,9 +226,9 @@ exports.compare = function (req, res) {
                                 case "Reference":
                                     mapSpecApIPayload.ref_id = element._id;
                                     payload.reference_filepath.push(_.cloneDeep(filePath));
-                                    if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
+                                     if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
                                         documentConversation(filePath, element);
-                                    }
+                                    } 
                                     break;
                                 case "Previous Label":
                                     payload.previousLabel_filepath.push(_.cloneDeep(filePath));
@@ -326,10 +326,10 @@ exports.compare = function (req, res) {
             .then(function (result) {
                 console.log("Convert from doc to pdf python : %dms", new Date() - result.startTime);
                 var cpath = cfilePath.replace(path.extname(cfilePath), ".pdf");
-                result.label.pdfPath = {
+                 result.label.pdfPath = {
                     location: cpath,
                     destination: cVpath.replace(path.extname(cVpath), ".pdf")
-                };
+                }; 
                 result.label.labelCopy = {
                     location: cfilePath,
                     destination: cVpath

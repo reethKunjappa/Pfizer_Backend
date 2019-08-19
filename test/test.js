@@ -82,6 +82,8 @@ describe("Projects", () => {
           name: "Tester Pfizer 1",
           userId: "tester1"
         },
+        drugName:"",
+        proprietaryName:"",
         createdOn: "",
         documents: [],
         projectName: "Sanity-Automation-" + randomA + "-" + rendomB
@@ -769,7 +771,7 @@ describe("Country Config", () => {
       });
   });
 });
-/*  describe('Review Label',()=>{
+  describe('Review Label',()=>{
     it('It should generate conflicts',(done)=>{
     
         let req = {
@@ -907,7 +909,7 @@ describe("Generate mapping spec", () => {
         done();
       });
   });
-}); */
+}); 
 
 describe('QC Report',()=>{
 
@@ -930,7 +932,7 @@ describe('QC Report',()=>{
         res.body.status.should.have.property("message");
         res.body.status.message.should.be.a("string");
         res.body.result.should.be.a("array");
-        res.body.result.checks.should.be.a("array");
+        //res.body.result.checks.should.be.a("array");
         res.body.result.file_id.should.be.a("string");
         res.body.result.project_id.should.be.a("string");
         done();

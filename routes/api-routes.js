@@ -12,7 +12,7 @@ var dashboardController = require('../controllers/dashboard.controller');
 var favouriteController = require('../controllers/favourite.controller');
 var commentsController = require('../controllers/comments.controller');
 var checkListController = require('../controllers/checklist.controller');
-var preferenceController = require('../controllers/preference.controller');
+//var preferenceController = require('../controllers/preference.controller');
 var configController = require('../controllers/config.controller')
 //authController
 /* router.route('/auth/register').post(authController.new);
