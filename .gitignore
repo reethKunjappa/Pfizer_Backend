@@ -5,4 +5,7 @@ uploads/
 fs/
 .vscode/
 .env
-logs/error.log
+logs/
+report.html
+.nyc_output
+coverage/
