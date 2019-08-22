@@ -140,6 +140,16 @@ let documentConversation = (filePath, element) => {
 
 var startTime = new Date();
 var pythonStartTime = new Date();
+var cVpath = ""
+var coreDoc = "";
+var mapSpecApIPayload = {};
+var conflictDoc = {
+    type: "CONFLICT"
+};
+
+var isRef = false;
+var filePath1 = "";
+var element1 = {};
 exports.compare = function (req, res) {
     log.info({ req: req.body }, "Conflict/Compare called");
     /* if (_compareAPICallCount)
@@ -152,14 +162,20 @@ exports.compare = function (req, res) {
 
     startTime = new Date();
     var project = {};
-    var conflictDoc = {
+    conflictDoc = {
         type: "CONFLICT"
     };
     var fileUploadPath = appConfig["FS_PATH"];
     var fileVirtualPath = appConfig["DOCUMENT_VIEW_PATH"];
-    var cfilePath, cVpath;
-    var coreDoc;
-    var mapSpecApIPayload = {};
+    var cfilePath;
+    cVpath = "";
+    coreDoc = "";
+    mapSpecApIPayload = {};
+    
+    isRef = false;
+    filePath1 = "";
+    element1 = {};
+
     let inputValidationFields = {
         _id: 'required',
     };
@@ -181,7 +197,7 @@ exports.compare = function (req, res) {
                     currentProjName = project.projectName;
                     return Promise.props({
                         ruleConfig: configController.getPythonPayload(project.country.name)  //getting Rule config data 
-                    }).then((data) => {
+                    }).then(async (data) => {
                         console.log(data)
                         var payload = {
                             label_filepath: "",
@@ -198,7 +214,8 @@ exports.compare = function (req, res) {
                         };
                         var basePath = path.resolve("./");
                         mapSpecApIPayload.project_id = project._id;
-                        project.documents.forEach(element => {
+                       // let helper = await compareHelper(project,payload,basePath)
+                         project.documents.forEach(async element => {
                             var filePath = path.resolve(
                                 basePath,
                                 element.location,
@@ -227,7 +244,12 @@ exports.compare = function (req, res) {
                                     mapSpecApIPayload.ref_id = element._id;
                                     payload.reference_filepath.push(_.cloneDeep(filePath));
                                      if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
-                                        documentConversation(filePath, element);
+                                       // documentConversation(filePath, element);
+                                        isRef = true;
+                                    filePath1 = filePath;
+                                    element1 = element
+                                    
+                                       console.log("Inside Refrence1", isRef)
                                     } 
                                     break;
                                 case "Previous Label":
@@ -247,6 +269,8 @@ exports.compare = function (req, res) {
                                     break;
                             }
                         });
+                        console.log("Inside Refrence-out side", isRef)    
+                       //let payload1 = await compareHelper(project,payload,basePath,fileUploadPath,fileVirtualPath); 
                         const options = {
                             uri: PYTHON_URL_CONFLITS,
                             method: "POST",
@@ -291,7 +315,11 @@ exports.compare = function (req, res) {
                     );
                     throw new Error(result.error);
                 }
-
+                console.log("Data input");
+                console.log(isRef);
+                if(isRef){
+                    documentConversation(filePath1, element1); 
+                } 
                 cfilePath = result.filepath;
                 project.conflicts = result.conflicts; //Total conflict count
                 project.conflicts.types = result.conflicts.types; // Each conflict count 
@@ -485,13 +513,13 @@ exports.viewConflictProject = function (req, res) {
 
 exports.commentAck = function (req, res) {
     var project;
-    if (_compareAPICallCount)
-                      return res.json(
-                        responseGenerator(
-                          -2,
-                            "Your labels(" + currentProjName + ") are still being analysed. Please try after sometime!"
-                        )
-                    );
+    // if (_compareAPICallCount)
+    //                   return res.json(
+    //                     responseGenerator(
+    //                       -2,
+    //                         "Your labels(" + currentProjName + ") are still being analysed. Please try after sometime!"
+    //                     )
+    //                 );
     try {
 
         let inputValidationFields = {
