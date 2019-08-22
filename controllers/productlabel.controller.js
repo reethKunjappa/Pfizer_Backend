@@ -147,9 +147,6 @@ var conflictDoc = {
     type: "CONFLICT"
 };
 
-var isRef = false;
-var filePath1 = "";
-var element1 = {};
 exports.compare = function (req, res) {
     log.info({ req: req.body }, "Conflict/Compare called");
     /* if (_compareAPICallCount)
@@ -159,7 +156,6 @@ exports.compare = function (req, res) {
                 "Your labels("+currentProjName+") are still being analysed. Please try after sometime!"
             ) 
         );*/
-
     startTime = new Date();
     var project = {};
     conflictDoc = {
@@ -172,9 +168,25 @@ exports.compare = function (req, res) {
     coreDoc = "";
     mapSpecApIPayload = {};
     
-    isRef = false;
-    filePath1 = "";
-    element1 = {};
+    let isRefDocx = false;
+    let refrenceFilePath = "";
+    let refrenceElement = {};
+
+    let isPreviousLabelDocx = false;
+    let previousLabelFilepath = "";
+    let previousLabelElement = {};
+
+    let isHaDocx = false;
+    let haFilepath = "";
+    let haElement = {}; 
+   
+    let isCheckListDocx = false;
+    let checklistFilepath = "";
+    let checklistElement = {};
+ 
+    let isFfSpecDocx = false;
+    let ffFilepath = "";
+    let ffElement = {};
 
     let inputValidationFields = {
         _id: 'required',
@@ -245,31 +257,50 @@ exports.compare = function (req, res) {
                                     payload.reference_filepath.push(_.cloneDeep(filePath));
                                      if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
                                        // documentConversation(filePath, element);
-                                        isRef = true;
-                                    filePath1 = filePath;
-                                    element1 = element
-                                    
-                                       console.log("Inside Refrence1", isRef)
+                                        isRefDocx = true;
+                                        refrenceFilePath = filePath;
+                                        refrenceElement = element
                                     } 
                                     break;
                                 case "Previous Label":
                                     payload.previousLabel_filepath.push(_.cloneDeep(filePath));
                                     if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
                                        // documentConversation(filePath, element);
+                                         isPreviousLabelDocx = true;
+                                         previousLabelFilepath = filePath;
+                                         previousLabelElement = element;
                                     }
                                     break;
                                 case "HA Guidelines":
                                     payload.ha_filepath.push(filePath);
+                                     if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
+                                       // documentConversation(filePath, element);
+                                         isHaDocx = true;
+                                         haFilepath = filePath;
+                                         haElement = element;
+                                    }
                                     break;
                                 case "Pfizer Checklist":
                                     payload.checklist_filepath.push(filePath);
+                                    if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
+                                       // documentConversation(filePath, element);
+                                         isCheckListDocx = true;
+                                         checklistFilepath = filePath;
+                                         checklistElement = element;
+                                    }
                                     break;
                                 case "Font Format Spec":
                                     payload.fontFormat_filepath.push(filePath);
+                                    if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
+                                       // documentConversation(filePath, element);
+                                         isFfSpecDocx = true;
+                                         ffFilepath = filePath;
+                                         ffElement = element;
+                                    }
                                     break;
                             }
                         });
-                        console.log("Inside Refrence-out side", isRef)    
+                          
                        //let payload1 = await compareHelper(project,payload,basePath,fileUploadPath,fileVirtualPath); 
                         const options = {
                             uri: PYTHON_URL_CONFLITS,
@@ -315,11 +346,28 @@ exports.compare = function (req, res) {
                     );
                     throw new Error(result.error);
                 }
-                console.log("Data input");
-                console.log(isRef);
-                if(isRef){
-                    documentConversation(filePath1, element1); 
+                //Once compare done -  Convert all doc/docx file into PDF
+                //ConvertRef file type
+                if(isRefDocx){
+                    documentConversation(refrenceFilePath, refrenceElement); 
                 } 
+                //Convert Previous label file type
+                if(isPreviousLabelDocx){
+                    documentConversation(previousLabelFilepath,previousLabelElement); 
+                }
+                //Convert Ha Gudline file type
+                if (isHaDocx) {
+                  documentConversation(haFilepath,haElement);
+                }
+                //convert Check list file type
+                if(isCheckListDocx){
+                    documentConversation(checklistFilepath, checklistElement);
+                }
+                //Convert Font format spec file type
+                if(isFfSpecDocx){
+                     documentConversation(ffFilepath,ffElement);
+                }
+
                 cfilePath = result.filepath;
                 project.conflicts = result.conflicts; //Total conflict count
                 project.conflicts.types = result.conflicts.types; // Each conflict count 
