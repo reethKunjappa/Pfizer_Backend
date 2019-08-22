@@ -16,6 +16,7 @@ var _ = require("lodash");
 require("mongoose").set("debug", true);
 var _compareAPICallCount = false;
 var currentProjName = null;
+var taskQueue = [] //toKeep track inprogress compare to avoid dblicate call
 //var ruleController = require('../controllers/preference.controller');
 var configController = require('../controllers/config.controller');
 exports.newProject = (req, res, next) => {
@@ -149,13 +150,16 @@ var conflictDoc = {
 
 exports.compare = function (req, res) {
     log.info({ req: req.body }, "Conflict/Compare called");
-    /* if (_compareAPICallCount)
-        return res.json(
-            responseGenerator(
-                -2,
-                "Your labels("+currentProjName+") are still being analysed. Please try after sometime!"
-            ) 
-        );*/
+     if (taskQueue.indexOf(req.body._id)>=0)
+       return res.json(
+         responseGenerator(
+           -2,
+           "Your labels(" +
+             currentProjName +
+             ") are still being analysed. Please try after sometime!"
+         )
+       );
+    taskQueue.push(req.body._id)  
     startTime = new Date();
     var project = {};
     conflictDoc = {
