@@ -339,6 +339,7 @@ exports.compare = function (req, res) {
                 }
             })
             .then(function (result) {
+                taskQueue.pop(result.project._id); //Remove project from queue once it done.
                 console.log("Python End Execution Time : %dms", new Date())
                 console.log("Total Python Execution Time : %dms", new Date() - pythonStartTime)
                 console.log("Python Conflicts result");
