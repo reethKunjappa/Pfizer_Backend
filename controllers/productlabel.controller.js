@@ -167,18 +167,14 @@ exports.compare = function (req, res) {
                         "Your label is still being analysed.",
                         currentProjName
                       )
-                    );
+                    )
                 }else{
-                    productLabel.findByIdAndUpdate(req.body._id),{set:{inProcess:true}},{new:false}.then(data=>{
+                    ProductLabel.findByIdAndUpdate(req.body._id,{$set:{inProcess:true}},{new:false}).then(data=>{
                         console.log("Inprocess flag updated")
                     }).catch(err=>{ 
                         console.log(err)
                     })
-                }
-            }).catch((err)=>{
-                console.log(err)
-            });
-    })
+         
     startTime = new Date();
     var project = {};
     conflictDoc = {
@@ -354,7 +350,7 @@ exports.compare = function (req, res) {
                 }
             })
             .then(function (result) {
-                productLabel.findByIdAndUpdate(result.error.project_id),{set:{inProcess:false}},{new:false}.then(data=>{
+                ProductLabel.findByIdAndUpdate(result.error.project_id,{$set:{inProcess:false}},{new:false}).then(data=>{
                         console.log("Inprocess flag updated")
                     }).catch(err=>{ 
                         console.log(err)
@@ -366,7 +362,7 @@ exports.compare = function (req, res) {
                 if (result.error) {
                   //Expecting project_id with error
                  // taskQueue.pop(result.error.project_id); //Remove project from queue once it fail/done.
-                    productLabel.findByIdAndUpdate(result.error.project_id),{set:{inProcess:false}},{new:false}.then(data=>{
+                    ProductLabel.findByIdAndUpdate(result.error.project_id,{$set:{inProcess:false}},{new:false}).then(data=>{
                         console.log("Inprocess flag updated")
                     }).catch(err=>{ 
                         console.log(err)
@@ -496,6 +492,11 @@ exports.compare = function (req, res) {
             )
         );
     });
+    }
+    }).catch((err)=>{
+        console.log(err)
+    });
+    })
 };
 exports.updateProject = function (req, res) {
     var productLabel = new ProductLabel(req.body);
