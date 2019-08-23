@@ -29,6 +29,10 @@ var ProductLabelSchema = new Schema({
     type: Boolean,
     default: false
   },
+  inProcess:{
+    type:Boolean,
+    default:false
+  },
   conflicts: {
     total: {
       type: Number,

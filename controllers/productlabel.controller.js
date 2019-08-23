@@ -16,7 +16,7 @@ var _ = require("lodash");
 require("mongoose").set("debug", true);
 var _compareAPICallCount = false;
 var currentProjName = null;
-var taskQueue = [] //toKeep track inprogress compare to avoid dblicate call
+//var taskQueue = [] //to keep track in progress compare to avoid dblicate call
 //var ruleController = require('../controllers/preference.controller');
 var configController = require('../controllers/config.controller');
 exports.newProject = (req, res, next) => {
@@ -149,17 +149,36 @@ var conflictDoc = {
 };
 
 exports.compare = function (req, res) {
-    log.info({ req: req.body }, "Conflict/Compare called");
-     if (taskQueue.indexOf(req.body._id)>=0)
-       return res.json(
-         responseGenerator(
-           -2,
-           "Your labels(" +
-             currentProjName +
-             ") are still being analysed. Please try after sometime!"
-         )
-       );
-    taskQueue.push(req.body._id)  
+    let inputValidationFields = {
+      _id: "required"
+    };
+    log.info({ req: req.body }, "Conflict/Compare called"); 
+     inputValidator(req.body, inputValidationFields).then((result) => {
+        if (!result.isValid) {
+            throw result.message;
+        }
+    }).then(() => { 
+            ProductLabel.findOne({ _id: req.body._id },{ inProcess:1}).then((data)=>{
+                console.log(data)
+                if (data.inProcess == true){
+                    return res.json(
+                      responseGenerator(
+                        -2,
+                        "Your label is still being analysed.",
+                        currentProjName
+                      )
+                    );
+                }else{
+                    productLabel.findByIdAndUpdate(req.body._id),{set:{inProcess:true}},{new:false}.then(data=>{
+                        console.log("Inprocess flag updated")
+                    }).catch(err=>{ 
+                        console.log(err)
+                    })
+                }
+            }).catch((err)=>{
+                console.log(err)
+            });
+    })
     startTime = new Date();
     var project = {};
     conflictDoc = {
@@ -191,10 +210,6 @@ exports.compare = function (req, res) {
     let isFfSpecDocx = false;
     let ffFilepath = "";
     let ffElement = {};
-
-    let inputValidationFields = {
-        _id: 'required',
-    };
     inputValidator(req.body, inputValidationFields).then((result) => {
         if (!result.isValid) {
             throw result.message;
@@ -339,17 +354,28 @@ exports.compare = function (req, res) {
                 }
             })
             .then(function (result) {
-                taskQueue.pop(result.project._id); //Remove project from queue once it done.
+                productLabel.findByIdAndUpdate(result.error.project_id),{set:{inProcess:false}},{new:false}.then(data=>{
+                        console.log("Inprocess flag updated")
+                    }).catch(err=>{ 
+                        console.log(err)
+                    }) 
                 console.log("Python End Execution Time : %dms", new Date())
                 console.log("Total Python Execution Time : %dms", new Date() - pythonStartTime)
                 console.log("Python Conflicts result");
                 //console.log(JSON.stringify(result.conflicts));
                 if (result.error) {
-                    log.error(
-                        { err: result.error },
-                        "Python conflict api response"
-                    );
-                    throw new Error(result.error);
+                  //Expecting project_id with error
+                 // taskQueue.pop(result.error.project_id); //Remove project from queue once it fail/done.
+                    productLabel.findByIdAndUpdate(result.error.project_id),{set:{inProcess:false}},{new:false}.then(data=>{
+                        console.log("Inprocess flag updated")
+                    }).catch(err=>{ 
+                        console.log(err)
+                    }) 
+                  log.error(
+                    { err: result.error.message},
+                    "Python conflict api error response"
+                  );
+                  throw new Error(result.error);
                 }
                 //Once compare done -  Convert all doc/docx file into PDF
                 //ConvertRef file type
@@ -377,6 +403,7 @@ exports.compare = function (req, res) {
                 project.conflicts = result.conflicts; //Total conflict count
                 project.conflicts.types = result.conflicts.types; // Each conflict count 
                 project.conflicted = true;
+                project.inProcess = false; 
                 var project_id = req.body._id;
 
                 return Promise.props({
@@ -447,6 +474,7 @@ exports.compare = function (req, res) {
             })
             .catch(function (err) {
                 log.error({ err: err }, logMessage.unhandlederror);
+                // taskQueue.pop(req.body._id); //Remove project from queue once it fail/done.
                 _compareAPICallCount = false;
                 /* return res.json(
                     responseGenerator(
@@ -457,6 +485,7 @@ exports.compare = function (req, res) {
 
             });
     }).catch((err) => {
+       //  taskQueue.pop(req.body._id); //Remove project from queue once it fail/done.
         _compareAPICallCount = false;
         //log.err({err:result.err},"Python conflict api response")
         console.log("Error", err);
