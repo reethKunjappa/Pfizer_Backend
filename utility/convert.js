@@ -1,4 +1,4 @@
-'use strict';
+/* 'use strict';
 const docxConverter = require('docx-pdf');
 var path = require('path');
 var fs = require('fs');
@@ -79,4 +79,4 @@ module.exports.convertPdfToImage = function (inputPath, callback) {
         console.log(err);
     });
 }
-module.exports.convertDocToImage = convertDocToImage;
+module.exports.convertDocToImage = convertDocToImage; */
