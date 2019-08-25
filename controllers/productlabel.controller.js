@@ -326,6 +326,7 @@ exports.compare = function (req, res) {
                                 "Content-Type": "application/json"
                             }
                         };
+                     
                         //create a copy of the label file
                         var srcPath = path.resolve("./", coreDoc.location, coreDoc.documentName
                         );
@@ -350,11 +351,9 @@ exports.compare = function (req, res) {
                 }
             })
             .then(function (result) {
-                ProductLabel.findByIdAndUpdate(result.error.project_id,{$set:{inProcess:false}},{new:false}).then(data=>{
-                        console.log("Inprocess flag updated")
-                    }).catch(err=>{ 
-                        console.log(err)
-                    }) 
+                console.log("Python [1]. Result:")
+                console.log(result)
+              
                 console.log("Python End Execution Time : %dms", new Date())
                 console.log("Total Python Execution Time : %dms", new Date() - pythonStartTime)
                 console.log("Python Conflicts result");
@@ -373,27 +372,32 @@ exports.compare = function (req, res) {
                   );
                   throw new Error(result.error);
                 }
-                //Once compare done -  Convert all doc/docx file into PDF
+                 //Once compare done -  Convert all doc/docx file into PDF
                 //ConvertRef file type
                 if(isRefDocx){
+                    console.log("Inside isRefDocx docx conv")
                     documentConversation(refrenceFilePath, refrenceElement); 
                 } 
                 //Convert Previous label file type
                 if(isPreviousLabelDocx){
+                    console.log("Inside isPreviousLabelDocx docx conv")
                     documentConversation(previousLabelFilepath,previousLabelElement); 
                 }
                 //Convert Ha Gudline file type
                 if (isHaDocx) {
+                    console.log("Inside isHaDocx docx conv")
                   documentConversation(haFilepath,haElement);
                 }
                 //convert Check list file type
                 if(isCheckListDocx){
+                    console.log("Inside isCheckListDocx docx conv")
                     documentConversation(checklistFilepath, checklistElement);
                 }
                 //Convert Font format spec file type
                 if(isFfSpecDocx){
+                    console.log("Inside isFfSpecDocx docx conv")
                      documentConversation(ffFilepath,ffElement);
-                }
+                } 
 
                 cfilePath = result.filepath;
                 project.conflicts = result.conflicts; //Total conflict count
