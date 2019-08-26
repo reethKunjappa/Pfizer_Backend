@@ -442,8 +442,13 @@ exports.compare = function (req, res) {
                     location: cfilePath,
                     destination: cVpath
                 };
-
                 result.label.originalPath = conflictDoc.originalPath;
+                //Update inprocess flag once comapre successed
+                ProductLabel.findByIdAndUpdate(req.body._id,{$set:{inProcess:false}},{new:false}).then(data=>{
+                        console.log("Inprocess flag updated")
+                    }).catch(err=>{ 
+                        console.log(err)
+                })
                 return Promise.props({
                     project: result.label.save().then(function () {
                         return ProductLabel.findById(result.project._id).populate("documents");
@@ -453,11 +458,6 @@ exports.compare = function (req, res) {
 
             })
             .then(function (project) {
-                ProductLabel.findByIdAndUpdate(req.body._id,{$set:{inProcess:false}},{new:false}).then(data=>{
-                        console.log("Inprocess flag updated")
-                    }).catch(err=>{ 
-                        console.log(err)
-                })
                 console.log('Total Execution time: %dms', new Date() - startTime);
                 res.send(responseGenerator(0, "Compared", project));
                 _compareAPICallCount = false;
