@@ -453,13 +453,13 @@ exports.compare = function (req, res) {
 
             })
             .then(function (project) {
-                console.log('Total Execution time: %dms', new Date() - startTime);
-                res.send(responseGenerator(0, "Compared", project));
                 ProductLabel.findByIdAndUpdate(req.body._id,{$set:{inProcess:false}},{new:false}).then(data=>{
                         console.log("Inprocess flag updated")
                     }).catch(err=>{ 
                         console.log(err)
                 })
+                console.log('Total Execution time: %dms', new Date() - startTime);
+                res.send(responseGenerator(0, "Compared", project));
                 _compareAPICallCount = false;
                 let apath = project.project.conflicts;
                 var auditData = [];
