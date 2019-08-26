@@ -933,8 +933,8 @@ describe('QC Report',()=>{
         res.body.status.message.should.be.a("string");
         res.body.result.should.be.a("array");
         //res.body.result.checks.should.be.a("array");
-        res.body.result.file_id.should.be.a("string");
-        res.body.result.project_id.should.be.a("string");
+        //res.body.result.file_id.should.be.a("string");
+        //res.body.result.project_id.should.be.a("string");
         done();
       });
 
