@@ -133,7 +133,11 @@ exports.reUploadFile = function (req, resp) {
                 project: result.project.save()
             });
         }).then(function (result) {
-
+            ProductLabel.findByIdAndUpdate(req.query.projectId,{$set:{inProcess:false}},{new:false}).then(data=>{
+                        console.log("Inprocess flag updated")
+                    }).catch(err=>{ 
+                        console.log(err)
+                })
             resp.json(responseGenerator(0, "Successfully Uploaded", result.document));
             var audit = {
                 user: JSON.parse(req.query.uploadedBy),
@@ -281,6 +285,11 @@ function updateProjectLabelInfo(req, resp, document, projectId, newDocId, isNew)
                 if (err) {
                     resp.json(responseGenerator(-1, "File Uploaded but unable to update Document Data with Project data", ""));
                 } else {
+                    ProductLabel.findByIdAndUpdate(projectId,{$set:{inProcess:false}},{new:false}).then(data=>{
+                        console.log("Inprocess flag updated")
+                    }).catch(err=>{ 
+                        console.log(err)
+                })
                     resp.json(responseGenerator(0, "Successfully Uploaded", document));
                     //create audit for upload doc
                     var audit = {
@@ -318,6 +327,11 @@ exports.deleteFile = function (req, res, next) {
 
         })
     }).then(function (result) {
+        ProductLabel.findByIdAndUpdate(req.body.projectId,{$set:{inProcess:false}},{new:false}).then(data=>{
+                        console.log("Inprocess flag updated")
+                    }).catch(err=>{ 
+                        console.log(err)
+                })
      res.send(responseGenerator(0, 'Document deleted', req.body));
     
      var audit = {
