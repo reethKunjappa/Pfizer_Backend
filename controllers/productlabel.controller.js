@@ -347,7 +347,7 @@ exports.compare = function (req, res) {
                         return rp(options);
                     })
                 } else {
-                    throw new Error();
+                    throw new Error("Python failed");
                 }
             })
             .then(function (result) {
@@ -359,7 +359,10 @@ exports.compare = function (req, res) {
                 console.log("Python Conflicts result");
                 //console.log(JSON.stringify(result.conflicts));
                 if (result.error) {
-                  //Expecting project_id with error
+                    console.log("******************* Error ********************");
+                    console.log(result)
+                    console.log(result.error.project_id)
+                                //Expecting project_id with error
                  // taskQueue.pop(result.error.project_id); //Remove project from queue once it fail/done.
                     ProductLabel.findByIdAndUpdate(result.error.project_id,{$set:{inProcess:false}},{new:false}).then(data=>{
                         console.log("Inprocess flag updated")
@@ -370,7 +373,7 @@ exports.compare = function (req, res) {
                     { err: result.error.message},
                     "Python conflict api error response"
                   );
-                  throw new Error(result.error);
+                  throw new Error(result.error.message);
                 }
                  //Once compare done -  Convert all doc/docx file into PDF
                 //ConvertRef file type
@@ -478,15 +481,24 @@ exports.compare = function (req, res) {
 
             })
             .catch(function (err) {
+                
                 log.error({ err: err }, logMessage.unhandlederror);
+                console.log(err)
+                // taskQueue.pop(result.error.project_id); //Remove project from queue once it fail/done.
+                ProductLabel.findByIdAndUpdate(req.body._id,{$set:{inProcess:false}},{new:false}).then(data=>{
+                    console.log("Inprocess flag updated")
+                }).catch(err=>{ 
+                    console.log(err)
+                })
                 // taskQueue.pop(req.body._id); //Remove project from queue once it fail/done.
                 _compareAPICallCount = false;
-                /* return res.json(
+                 return res.json(
                     responseGenerator(
                         -1,
                         err.message
                     )
-                ); */
+                ); 
+                console.log(err)
 
             });
     }).catch((err) => {
