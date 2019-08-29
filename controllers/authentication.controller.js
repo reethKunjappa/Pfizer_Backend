@@ -1,4 +1,4 @@
-/* var jwt = require('jsonwebtoken');
+/*  var jwt = require('jsonwebtoken');
 var config = require('../config/database');
 const { User } = require('../models/model');
 const { responseGenerator } = require('../utility/commonUtils');
@@ -11,14 +11,11 @@ exports.new = function (req, res) {
         var user = new User();
         user.username = req.body.username;
         user.password = req.body.password;
-        user.companyid = req.body.companyid;
         user.emailid = req.body.emailid;
-        user.image = req.body.image;
         user.firstname = req.body.firstname;
         user.lastname = req.body.lastname;
         user.active = true;
         user.mobile = req.body.mobile;
-        user.region = req.body.region;
         user.roles = req.body.roles;
         // save the contact and check for errors
         user.save(function (err) {
@@ -61,4 +58,4 @@ exports.signin = function (req, res) {
 
 };
 
- */
+  */

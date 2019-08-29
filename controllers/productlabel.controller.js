@@ -125,8 +125,8 @@ let documentConversation = (filePath, element, _id) => {
         referencePdf: convertDocToPdf(_.cloneDeep(filePath),_id),
         reference: DocumentSchema.findById(element._id)
     }).then((result) => {
-        if (result.referencePdf.result.success== false) {
-          throw new Error(result.referencePdf.result.message);
+        if (result.referencePdf.result.error) {
+          throw new Error(result.referencePdf.result.error);
         }
         var cpath = filePath.replace(path.extname(filePath), ".pdf");
         result.reference.pdfPath = {
@@ -136,7 +136,8 @@ let documentConversation = (filePath, element, _id) => {
         return result.reference.save()
     }).catch((err) => {
         log.error({ err: err }, "Something is went wrong");
-        return res.json(responseGenerator(-1, err.message)); 
+        return err
+        //return res.json(responseGenerator(-1, err.message)); 
    
     })
 };
@@ -281,7 +282,6 @@ exports.compare = function (req, res) {
                                     mapSpecApIPayload.ref_id = element._id;
                                     payload.reference_filepath.push(_.cloneDeep(filePath));
                                      if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
-                                       // documentConversation(filePath, element);
                                         isRefDocx = true;
                                         refrenceFilePath = filePath;
                                         refrenceElement = element
@@ -290,7 +290,6 @@ exports.compare = function (req, res) {
                                 case "Previous Label":
                                     payload.previousLabel_filepath.push(_.cloneDeep(filePath));
                                     if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
-                                       // documentConversation(filePath, element);
                                          isPreviousLabelDocx = true;
                                          previousLabelFilepath = filePath;
                                          previousLabelElement = element;
@@ -299,7 +298,6 @@ exports.compare = function (req, res) {
                                 case "HA Guidelines":
                                     payload.ha_filepath.push(filePath);
                                      if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
-                                       // documentConversation(filePath, element);
                                          isHaDocx = true;
                                          haFilepath = filePath;
                                          haElement = element;
@@ -308,7 +306,6 @@ exports.compare = function (req, res) {
                                 case "Pfizer Checklist":
                                     payload.checklist_filepath.push(filePath);
                                     if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
-                                       // documentConversation(filePath, element);
                                          isCheckListDocx = true;
                                          checklistFilepath = filePath;
                                          checklistElement = element;
@@ -317,7 +314,6 @@ exports.compare = function (req, res) {
                                 case "Font Format Spec":
                                     payload.fontFormat_filepath.push(filePath);
                                     if (path.extname(filePath) === '.docx' || path.extname(filePath) === '.doc') {
-                                       // documentConversation(filePath, element);
                                          isFfSpecDocx = true;
                                          ffFilepath = filePath;
                                          ffElement = element;
@@ -326,7 +322,6 @@ exports.compare = function (req, res) {
                             }
                         });
                           
-                       //let payload1 = await compareHelper(project,payload,basePath,fileUploadPath,fileVirtualPath); 
                         const options = {
                             uri: PYTHON_URL_CONFLITS,
                             method: "POST",
@@ -389,17 +384,17 @@ exports.compare = function (req, res) {
                 //ConvertRef file type
                 if(isRefDocx){
                     console.log("Inside isRefDocx docx conv")
-                    documentConversation(refrenceFilePath, refrenceElement, project._id); 
+                    console.log(documentConversation(refrenceFilePath, refrenceElement, project._id)); 
                 } 
                 //Convert Previous label file type
                 if(isPreviousLabelDocx){
                     console.log("Inside isPreviousLabelDocx docx conv")
-                    documentConversation(previousLabelFilepath,previousLabelElement, project._id); 
+                    console.log(documentConversation(previousLabelFilepath,previousLabelElement, project._id)); 
                 }
                 //Convert Ha Gudline file type
                 if (isHaDocx) {
                     console.log("Inside isHaDocx docx conv")
-                  documentConversation(haFilepath, haElement, project._id);
+                  cpnsole.log(documentConversation(haFilepath, haElement, project._id));
                 }
                 //convert Check list file type
                 if(isCheckListDocx){
