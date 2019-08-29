@@ -4,7 +4,7 @@ var rimraf = require('rimraf');
 require('dotenv').config();
 const { PYTHON_URL_W2P } = require('../config/appConfig');
 const v = require('node-input-validator');
-
+var path = require("path");
 //var pythonConvertAPI = "http://localhost:3009/";
 
 /* exports.generateId = function(preceed, model) {
@@ -22,16 +22,18 @@ const v = require('node-input-validator');
   });
 }; */
 
-exports.convertDocToPdf = function (path,_id) {
+exports.convertDocToPdf = function (fpath,_id) {
     console.log("******Node calling python convertToPDF mode*******");
-    console.log("File Path: ", path)
+    console.log("File Path: ", fpath)
     console.log("_id: ", _id);
+   // let pdfPath = fpath.replace(path.extname(fpath), ".pdf"); 
+   // deleteFolder(path.resolve(pdfPath)); //remove exsting Pdf file 
     var rp = require('request-promise');
     var options = {
         method: 'POST',
         uri: PYTHON_URL_W2P,
         body: {
-            file_path: path,
+            file_path: fpath,
             project_id: _id
         },
         json: true // Automatically stringifies the body to JSON

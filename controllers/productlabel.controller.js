@@ -394,7 +394,7 @@ exports.compare = function (req, res) {
                 //Convert Ha Gudline file type
                 if (isHaDocx) {
                     console.log("Inside isHaDocx docx conv")
-                  cpnsole.log(documentConversation(haFilepath, haElement, project._id));
+                  console.log(documentConversation(haFilepath, haElement, project._id));
                 }
                 //convert Check list file type
                 if(isCheckListDocx){
