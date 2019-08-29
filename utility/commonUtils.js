@@ -22,7 +22,7 @@ const v = require('node-input-validator');
   });
 }; */
 
-exports.convertDocToPdf = function (path) {
+exports.convertDocToPdf = function (path,_id) {
     console.log("******Node calling python convertToPDF mode*******");
     console.log("File Path: ", path)
     var rp = require('request-promise');
@@ -30,7 +30,8 @@ exports.convertDocToPdf = function (path) {
         method: 'POST',
         uri: PYTHON_URL_W2P,
         body: {
-            file_path: path
+            file_path: path,
+            project_id: _id
         },
         json: true // Automatically stringifies the body to JSON
     };

@@ -3,6 +3,8 @@ var Schema = mongoose.Schema;
 
 var AuditSchema = new Schema({
    user:{},
+   //criteria:[],
+   //match:[],
    project: {
 _id:{
            type: Schema.Types.ObjectId,

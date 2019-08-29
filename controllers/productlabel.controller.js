@@ -120,13 +120,13 @@ exports.viewProject = function (req, res) {
     }
 };
 
-let documentConversation = (filePath, element) => {
+let documentConversation = (filePath, element, _id) => {
     Promise.props({
-        referencePdf: convertDocToPdf(_.cloneDeep(filePath)),
+        referencePdf: convertDocToPdf(_.cloneDeep(filePath),_id),
         reference: DocumentSchema.findById(element._id)
     }).then((result) => {
-        if (typeof (result) == 'string') {
-            throw new Error(result);
+        if (result.referencePdf.result.success== false) {
+          throw new Error(result.referencePdf.result.message);
         }
         var cpath = filePath.replace(path.extname(filePath), ".pdf");
         result.reference.pdfPath = {
@@ -136,6 +136,8 @@ let documentConversation = (filePath, element) => {
         return result.reference.save()
     }).catch((err) => {
         log.error({ err: err }, "Something is went wrong");
+        return res.json(responseGenerator(-1, err.message)); 
+   
     })
 };
 
@@ -150,7 +152,9 @@ var conflictDoc = {
 
 exports.compare = function (req, res) {
     let inputValidationFields = {
-      _id: "required"
+      _id: "required",
+     // criteria: "required",
+     // match: "required"
     };
     log.info({ req: req.body }, "Conflict/Compare called"); 
      inputValidator(req.body, inputValidationFields).then((result) => {
@@ -180,6 +184,8 @@ exports.compare = function (req, res) {
     conflictDoc = {
         type: "CONFLICT"
     };
+    let criteria = [];
+    let match = [];
     var fileUploadPath = appConfig["FS_PATH"];
     var fileVirtualPath = appConfig["DOCUMENT_VIEW_PATH"];
     var cfilePath;
@@ -211,6 +217,8 @@ exports.compare = function (req, res) {
             throw result.message;
         }
     }).then(() => {
+        criteria = req.body.criteria;
+        match = req.body.match;
         _compareAPICallCount = true;
         ProductLabel.findOne({ _id: req.body._id })
             .populate("documents")
@@ -227,17 +235,19 @@ exports.compare = function (req, res) {
                     }).then(async (data) => {
                         console.log(data)
                         var payload = {
-                            label_filepath: "",
-                            ha_filepath: [],
-                            checklist_filepath: [],
-                            previousLabel_filepath: [],
-                            fontFormat_filepath: [],
-                            reference_filepath: [],
-                            country_name: project.country.name,
-                            proprietaryName: project.proprietaryName,
-                            drugName: project.drugName,
-                            project_id: project._id,
-                            rulesConfig: data.ruleConfig 
+                          label_filepath: "",
+                          ha_filepath: [],
+                          checklist_filepath: [],
+                          previousLabel_filepath: [],
+                          fontFormat_filepath: [],
+                          reference_filepath: [],
+                          country_name: project.country.name,
+                          proprietaryName: project.proprietaryName,
+                          drugName: project.drugName,
+                          project_id: project._id,
+                          rulesConfig: data.ruleConfig,
+                          //criteria: criteria,
+                          //match: match
                         };
                         var basePath = path.resolve("./");
                         mapSpecApIPayload.project_id = project._id;
@@ -379,27 +389,27 @@ exports.compare = function (req, res) {
                 //ConvertRef file type
                 if(isRefDocx){
                     console.log("Inside isRefDocx docx conv")
-                    documentConversation(refrenceFilePath, refrenceElement); 
+                    documentConversation(refrenceFilePath, refrenceElement, project._id); 
                 } 
                 //Convert Previous label file type
                 if(isPreviousLabelDocx){
                     console.log("Inside isPreviousLabelDocx docx conv")
-                    documentConversation(previousLabelFilepath,previousLabelElement); 
+                    documentConversation(previousLabelFilepath,previousLabelElement, project._id); 
                 }
                 //Convert Ha Gudline file type
                 if (isHaDocx) {
                     console.log("Inside isHaDocx docx conv")
-                  documentConversation(haFilepath,haElement);
+                  documentConversation(haFilepath, haElement, project._id);
                 }
                 //convert Check list file type
                 if(isCheckListDocx){
                     console.log("Inside isCheckListDocx docx conv")
-                    documentConversation(checklistFilepath, checklistElement);
+                    documentConversation(checklistFilepath, checklistElement, project._id);
                 }
                 //Convert Font format spec file type
                 if(isFfSpecDocx){
                     console.log("Inside isFfSpecDocx docx conv")
-                     documentConversation(ffFilepath,ffElement);
+                     documentConversation(ffFilepath, ffElement, project._id);
                 } 
 
                 cfilePath = result.filepath;
@@ -407,11 +417,11 @@ exports.compare = function (req, res) {
                 project.conflicts.types = result.conflicts.types; // Each conflict count 
                 project.conflicted = true;
                 project.inProcess = false; 
-                var project_id = req.body._id;
+               // var project_id = req.body._id;
 
                 return Promise.props({
                     startTime: new Date(),
-                    comments: ConflictComment.find({ project_id: project_id, _deleted: false }),
+                    comments: ConflictComment.find({ project_id: project._id, _deleted: false }),
                     project: project.save()
                 })
 
@@ -427,11 +437,11 @@ exports.compare = function (req, res) {
             })
             .then(function (projectObj) {
                 return Promise.props({
-                    startTime: new Date(),
-                    pdf: convertDocToPdf(cfilePath),
-                    project: projectObj.project,
-                    label: projectObj.label,
-                    comments: projectObj.comments
+                  startTime: new Date(),
+                  pdf: convertDocToPdf(cfilePath, project._id),
+                  project: projectObj.project,
+                  label: projectObj.label,
+                  comments: projectObj.comments
                 });
             })
             .then(function (result) {
@@ -472,6 +482,8 @@ exports.compare = function (req, res) {
                 let total = apath.total == undefined ? 0 : apath.total
                 var audit = {
                     user: project.project.createdBy,
+                   // criteria:criteria,
+                   // match:match,
                     project: project.project,
                     actionType: "Compare Documents",
                     description: 'Total conflicts: ' + total + ', ' + auditData.toString()
@@ -660,7 +672,7 @@ exports.commentAck = function (req, res) {
                     return rp(options);
                 }).then(function (pyresponse) {
                     return Promise.props({
-                        pdf: convertDocToPdf(pyresponse.label_filepath),
+                        pdf: convertDocToPdf(pyresponse.label_filepath,req.body.projectId),
                         cfilePath: pyresponse.label_filepath
                     });
                 }).then(function (result) {
