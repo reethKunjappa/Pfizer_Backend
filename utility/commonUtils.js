@@ -26,8 +26,8 @@ exports.convertDocToPdf = function (fpath,_id) {
     console.log("******Node calling python convertToPDF mode*******");
     console.log("File Path: ", fpath)
     console.log("_id: ", _id);
-   // let pdfPath = fpath.replace(path.extname(fpath), ".pdf"); 
-   // deleteFolder(path.resolve(pdfPath)); //remove exsting Pdf file 
+    let pdfPath = fpath.replace(path.extname(fpath), ".pdf"); 
+    deleteFolder(path.resolve(pdfPath)); //remove exsting Pdf file 
     var rp = require('request-promise');
     var options = {
         method: 'POST',
