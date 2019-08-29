@@ -5,6 +5,7 @@ var RuleConfigSchema = new Schema(
     [
         {
             createdBy: {},
+            updatedBy: {},
             rulesSetup: {
                 ruleName: String,
                 ruleDescription: String

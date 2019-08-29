@@ -210,3 +210,35 @@ exports.deleteConfig = (req,res)=>{
         res.json(responseGenerator(-1, "Something went wrong", ""));
     }
 }
+exports.updateRuleConfig = (req, res) => {
+  try {
+    let inputValidationFields = {
+      _id: "required",
+    };
+    inputValidator(req.body, inputValidationFields)
+      .then(result => {
+        if (!result.isValid) {
+          throw result.message;
+        }
+      })
+      .then(() => {
+          ruleConfigModel.findByIdAndUpdate({ _id: req.body._id },{$set:req.body},{upsert:true,new:true}).then(rule => {
+            return res.json(
+              responseGenerator(
+                0,
+                "Successfully updated rules: ",
+                rule
+              )
+            );
+          });
+         
+      })
+      .catch(err => {
+        log.error({ err: err }, logMessage.validatationerror);
+        res.json(responseGenerator(-1, "Mandatory fields Missed", err));
+      });
+  } catch (err) {
+    log.error({ err: err }, logMessage.unhandlederror);
+    res.json(responseGenerator(-1, "Something went wrong", ""));
+  }
+};

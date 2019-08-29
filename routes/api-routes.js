@@ -52,7 +52,7 @@ router.route("/labelling/createCountryConfig").post(configController.createCount
 router.route("/labelling/createRuleConfig").post(configController.createRuleConfig);
 router.route("/labelling/getAllConfig").post(configController.getAllConfig);
 router.route("/labelling/deleteConfig").post(configController.deleteConfig);
-
+router.route("/labelling/updateRuleConfig").post(configController.updateRuleConfig);
 //router.route("/labelling/getPythonPayload").post(configController.getPythonPayload);
 
 //CheckList

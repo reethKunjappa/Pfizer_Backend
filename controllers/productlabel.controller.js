@@ -509,7 +509,7 @@ exports.compare = function (req, res) {
         res.json(
             responseGenerator(
                 -1,
-                err.id.message
+                err.message
             )
         );
     });
