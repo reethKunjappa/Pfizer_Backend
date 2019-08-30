@@ -261,7 +261,7 @@ exports.updateRuleConfig = (req, res) => {
         }
       })
       .then(() => {
-          ruleConfigModel.findByIdAndUpdate({ _id: req.body._id },{$set:req.body},{upsert:true,new:true}).then(rule => {
+          ruleConfigModel.findByIdAndUpdate({ _id: req.body._id },{$set:req.body},{upsert:true,new:true}).populate("documents").then(rule => {
             return res.json(
               responseGenerator(
                 0,
