@@ -62,6 +62,12 @@ router.post("/checkList", checkListController.getAllCheckList);
 //dashboard
 router.post("/labelling/dashboard", dashboardController.getCount);
 
+
+//Comments
+router.route("/labelling/getAllComments").post(commentsController.getAllComments);
+router.route("/labelling/createComments").post(commentsController.createComments);
+router.route("/labelling/updateComments").post(commentsController.updateComments);
+
 // Verify JWT Jokens from REST
 /* function verifyToken(req, res, next) {
     var token = req.headers['authorization'];

@@ -1,4 +1,4 @@
-/* var mongoose = require('mongoose');
+ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var CommentsSchema = new Schema({
@@ -20,4 +20,4 @@ var CommentsSchema = new Schema({
     },
 });
 
-module.exports = mongoose.model('Comments', CommentsSchema); */
+module.exports = mongoose.model('Comments', CommentsSchema); 

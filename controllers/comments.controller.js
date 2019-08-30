@@ -1,4 +1,4 @@
-/* 'use strict';
+ 'use strict';
 var Comments = require('../models/comments.model');
 var _ = require('lodash');
 const { responseGenerator } = require('../utility/commonUtils');
@@ -43,7 +43,7 @@ module.exports.updateComments = function (req, res, next) {
             console.error(err);
             return res.status(400).send({ success: false, err: err.message });
         });
-} */
+} 
 /*
 module.exports.deleteComments = function (req, res, next) {
     var query = req.body;
