@@ -178,6 +178,83 @@ describe("Projects", () => {
     });
   });
 });
+describe("Project specific comments", () => {
+  let updatedId;
+  it("It should create comments for specific project", done => {
+    let req = {
+      projectId: _pId,
+      commentedBy: {
+        email: "tester1@pfizer.com",
+        name: "Tester Pfizer 1",
+        userId: "tester1"
+      },
+      commentedText: "Sanity insert comments test"
+    };
+    chai
+      .request(server)
+      .post("/api/labelling/createComments")
+      .send(req)
+      .end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a("object");
+        res.body.should.have.property("status");
+        res.body.status.should.have.property("code").eql(0);
+        res.body.status.should.have.property("message");
+        res.body.status.message.should.be.a("string");
+        res.body.result.should.be.a("object");
+        updatedId = res.body.result._id;
+        done();
+      });
+  });
+  it("It should updated comments for specific project", done => {
+    let req = {
+      projectId: _pId,
+      _id: updatedId,
+      commentedBy: {
+        email: "tester1@pfizer.com",
+        name: "Tester Pfizer 1",
+        userId: "tester1"
+      },
+      commentedOn: "2019-08-30T07:04:22.486Z",
+      commentedText: "Sanity insert comments test updated",
+      __v: 0
+    };
+    chai
+      .request(server)
+      .post("/api/labelling/updateComments")
+      .send(req)
+      .end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a("object");
+        res.body.should.have.property("status");
+        res.body.status.should.have.property("code").eql(0);
+        res.body.status.should.have.property("message");
+        res.body.status.message.should.be.a("string");
+        res.body.result.should.be.a("object");
+        done();
+      });
+  });
+  it("It should get all comments for specific project", done => {
+    let req = {
+      projectId: _pId
+    };
+    chai
+      .request(server)
+      .post("/api/labelling/getAllComments")
+      .send(req)
+      .end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a("object");
+        res.body.should.have.property("status");
+        res.body.status.should.have.property("code").eql(0);
+        res.body.status.should.have.property("message");
+        res.body.status.message.should.be.a("string");
+        res.body.result.should.be.a("array");
+        done();
+      });
+  });
+});
+
 describe("Favorite", () => {
   it("It should get all user fav project" , done => {
     let req = {
@@ -771,7 +848,7 @@ describe("Country Config", () => {
       });
   });
 });
-  describe('Review Label',()=>{
+ /*  describe('Review Label',()=>{
     it('It should generate conflicts',(done)=>{
     
         let req = {
@@ -939,7 +1016,7 @@ describe('QC Report',()=>{
       });
 
   })
-})
+}) */
 
 describe("Get dashboard", () => {
   it("Should get all dashboard data", done => {
