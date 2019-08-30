@@ -43,7 +43,7 @@ var RuleConfigSchema = new Schema(
                 addInfo:[]
             },
             exceptionData: [],
-            documents: [{ type: mongoose.Schema.ObjectId, ref: DocumentSchema }]
+            documents: [{ type: mongoose.Schema.ObjectId, ref: "DocumentSchema"}]
 
         }
     ],

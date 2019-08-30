@@ -9,6 +9,8 @@ var { mkdir, inputValidator, log} = require("../utility/commonUtils");
 const { logMessage } = require('../config/appConfig');
 var uuid = require("uuid-v4");
 var _ = require("lodash");
+var path = require("path")
+var basePath = path.resolve("./");
 var fileUploadPath = "";
 var Promise = require("bluebird");
 var multer = require("multer");
@@ -51,6 +53,10 @@ exports.configFileUpload = function (req, res) {
                         documentSchema.countryConfig_id = req.query.projectId;
                         documentSchema.uploadedBy = JSON.parse(req.query.uploadedBy);
                         documentSchema.fileType = req.query.fileType;
+                        documentSchema.pdfPath = {
+                                    location : path.resolve(basePath,req.files[i].destination, req.files[i].filename),
+                                    destination : fileVirtualPath + "/" + documentId + "/" + file[i].originalname
+                                }
                         documentSchema.save(function (err) {
                             if (err) {
                                 res.json(
@@ -147,37 +153,70 @@ exports.getPythonPayload = (countryName)=>{
         return [];
    
     return new Promise((resolve, reject) => {
-         ruleConfigModel.aggregate([
-            { $match: { $or: [{ "rulesApplication.country.name": countryName }, { "rulesApplication.global": true}]}},
-            { $unwind: "$rulesApplication" },
-            { $match: { $or: [{ "rulesApplication.country.name": countryName }, { "rulesApplication.global": true }]}},
-            {
-                $project: {
-                    ruleName:'$rulesSetup.ruleName',
-                    ruleDescription:'$rulesSetup.ruleDescription',
-                    comments:'$action.comments',
-                    allSections:"$rulesApplication.allSections",
-                    sections:"$rulesApplication.sections.value",
-                    section_selection:"$rulesApplication.sections.condition",
-                    conflictType:"$action.conflictType",
-                    additionalInformation:"$additionalInformation.addInfo",
-                    exceptionData: 1,
-                    _id: 0
-                }
-            }
-        ])
-            .then(rule => {
-                console.log("Rule config: ", rule)
-               // return res.json(responseGenerator(0, "Successfully get pythonPyload data: ", rule));
-                resolve(rule)
-            })
-            .catch(err => {
-                console.log(err.message);
-                reject([])
-               /*  res.json(
+         ruleConfigModel
+           .aggregate([
+             {
+               $match: {
+                 $or: [
+                   { "rulesApplication.country.name": countryName },
+                   { "rulesApplication.global": true }
+                 ]
+               }
+             },
+             { $unwind: "$rulesApplication" },
+             {
+               $match: {
+                 $or: [
+                   { "rulesApplication.country.name": countryName },
+                   { "rulesApplication.global": true }
+                 ]
+               }
+             },
+             {
+               $project: {
+                 ruleName: "$rulesSetup.ruleName",
+                 ruleDescription: "$rulesSetup.ruleDescription",
+                 comments: "$action.comments",
+                 allSections: "$rulesApplication.allSections",
+                 sections: "$rulesApplication.sections.value",
+                 section_selection: "$rulesApplication.sections.condition",
+                 conflictType: "$action.conflictType",
+                 additionalInformation: "$additionalInformation.addInfo",
+                 exceptionData: 1,
+                 documents: 1,
+                 _id: 0
+               }
+             },
+             {
+               $lookup: {
+                 from: "documentschemas",
+                 localField: "documents",
+                 foreignField: "_id",
+                 as: "rule_filepath"
+               }
+             }
+           ])
+           .then(rule => {
+             console.log("Rule config: ", rule);             
+        rule.forEach(function(data, index) {
+          if (rule[index]["documents"].length!=0) {
+            delete rule[index]["documents"];
+            rule[index].rule_filepath =
+              rule[index].rule_filepath[index].pdfPath.location;
+          } else {
+            delete rule[index]["documents"];
+            rule[index].rule_filepath = "";
+          }
+        });
+             resolve(rule);
+           })
+           .catch(err => {
+             console.log(err.message);
+             reject([]);
+             /*  res.json(
                     responseGenerator(-1, "Unable to  get pythonPyload data", err)
                 ); */
-            });
+           });
         })
 }
 
@@ -242,3 +281,6 @@ exports.updateRuleConfig = (req, res) => {
     res.json(responseGenerator(-1, "Something went wrong", ""));
   }
 };
+
+
+
