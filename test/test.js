@@ -848,7 +848,7 @@ describe("Country Config", () => {
       });
   });
 });
- /*  describe('Review Label',()=>{
+describe('Review Label',()=>{
     it('It should generate conflicts',(done)=>{
     
         let req = {
@@ -1016,7 +1016,7 @@ describe('QC Report',()=>{
       });
 
   })
-}) */
+})
 
 describe("Get dashboard", () => {
   it("Should get all dashboard data", done => {
