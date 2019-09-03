@@ -173,6 +173,14 @@ exports.getPythonPayload = (countryName)=>{
                }
              },
              {
+               $lookup: {
+                 from: "documentschemas",
+                 localField: "documents",
+                 foreignField: "_id",
+                 as: "rule_filepath"
+               }
+             },
+             {
                $project: {
                  ruleName: "$rulesSetup.ruleName",
                  ruleDescription: "$rulesSetup.ruleDescription",
@@ -183,31 +191,13 @@ exports.getPythonPayload = (countryName)=>{
                  conflictType: "$action.conflictType",
                  additionalInformation: "$additionalInformation.addInfo",
                  exceptionData: 1,
-                 documents: 1,
+                 rule_filepath:"$rule_filepath.pdfPath.location",
                  _id: 0
-               }
-             },
-             {
-               $lookup: {
-                 from: "documentschemas",
-                 localField: "documents",
-                 foreignField: "_id",
-                 as: "rule_filepath"
                }
              }
            ])
            .then(rule => {
-             console.log("Rule config: ", rule);             
-        rule.forEach(function(data, index) {
-          if (rule[index]["documents"].length!=0) {
-            delete rule[index]["documents"];
-            rule[index].rule_filepath =
-              rule[index].rule_filepath[index].pdfPath.location;
-          } else {
-            delete rule[index]["documents"];
-            rule[index].rule_filepath = "";
-          }
-        });
+             console.log("Rule config: ", rule);
              resolve(rule);
            })
            .catch(err => {
