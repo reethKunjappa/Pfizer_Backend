@@ -9,9 +9,9 @@ exports.new = function (req, res) {
 
  try {
         let inputValidationFields = {
-            username: 'required|string',
-            firstname: 'required|string',
-            lastname: 'required|string',
+            userName: 'required|string',
+            firstName: 'required|string',
+            lastName: 'required|string',
             access: 'required|array'
         };
         inputValidator(req.body, inputValidationFields).then((result) => {
@@ -20,15 +20,15 @@ exports.new = function (req, res) {
             }
         }).then(() => {
             var user = new User();
-            user.username = req.body.username;
+            user.userName = req.body.userName;
             user.password = "Admin";
-            user.firstname = req.body.firstname;
-            user.lastname = req.body.lastname;
+            user.firstName = req.body.firstName;
+            user.lastName = req.body.lastName;
             user.access = req.body.access;
             // save the contact and check for errors
             user.save(function(err) {
                 user.password = "";
-                if (err) return res.json(responseGenerator(-1, "User "+req.body.username+" exist, Please try with diffrent username!", err.errmsg));
+                if (err) return res.json(responseGenerator(-1, "User "+req.body.userName+" exist, Please try with diffrent username!", err.errmsg));
 
                 return res.json(responseGenerator(0, "Successfully created user", user));
             });
@@ -46,7 +46,7 @@ exports.new = function (req, res) {
 // User Signin
 exports.signin = function (req, res) {
     try {
-        User.findOne({ username: req.body.username }).exec(function (err, user) {
+        User.findOne({ userName: req.body.userName }).exec(function (err, user) {
             if (err)
                 res.json(responseGenerator(-1, "Unable to signin. Please try after sometime", err));
             if (!user) {
