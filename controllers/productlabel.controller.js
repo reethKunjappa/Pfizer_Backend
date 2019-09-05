@@ -142,14 +142,14 @@ let documentConversation = (filePath, element, _id) => {
     })
 };
 
-var startTime = new Date();
+ var startTime = new Date();
 var pythonStartTime = new Date();
-var cVpath = ""
+/*var cVpath = ""
 var coreDoc = "";
 var mapSpecApIPayload = {};
 var conflictDoc = {
     type: "CONFLICT"
-};
+}; */
 
 exports.compare = function (req, res) {
     let inputValidationFields = {
@@ -179,20 +179,20 @@ exports.compare = function (req, res) {
                     }).catch(err=>{ 
                         console.log(err)
                     })
-         
-    startTime = new Date();
+        
     var project = {};
-    conflictDoc = {
-        type: "CONFLICT"
-    };
     let criteria = [];
     let match = [];
     var fileUploadPath = appConfig["FS_PATH"];
     var fileVirtualPath = appConfig["DOCUMENT_VIEW_PATH"];
+
+    var conflictDoc = {
+        type: "CONFLICT"
+    };
     var cfilePath;
-    cVpath = "";
-    coreDoc = "";
-    mapSpecApIPayload = {};
+    var cVpath = "";
+    var coreDoc = "";
+    var mapSpecApIPayload = {};
     
     let isRefDocx = false;
     let refrenceFilePath = "";
@@ -357,7 +357,7 @@ exports.compare = function (req, res) {
             })
             .then(function (result) {
                 console.log("Python [1]. Result:")
-                console.log(result)
+                //console.log(result)
               
                 console.log("Python End Execution Time : %dms", new Date())
                 console.log("Total Python Execution Time : %dms", new Date() - pythonStartTime)
@@ -414,50 +414,62 @@ exports.compare = function (req, res) {
                 project.inProcess = false; 
                // var project_id = req.body._id;
 
-                return Promise.props({
+               return Promise.props({
                     startTime: new Date(),
                     comments: ConflictComment.find({ project_id: project._id, _deleted: false }),
-                    project: project.save()
+                    project: project.save(),
+                    cfilePath:cfilePath,
+                    project_ID:project._id,
+                    cVpath:cVpath,
+                    conflictDoc:conflictDoc,
+                    label:DocumentSchema.findById(coreDoc._id)
                 })
 
             })
             .then(function (result) {
-                console.log("Node comments fetching from DB : %dms", new Date() - result.startTime);
-                return Promise.props({
+                //console.log("Node comments fetching from DB : %dms", new Date() - result.startTime);
+                 return Promise.props({
                     project: result.project,
-                    label: DocumentSchema.findById(coreDoc._id),
+                    label: result.label, //DocumentSchema.findById(result.ccoreDoc),
                     comments: result.comments,
+                    cfilePath: result.cfilePath,
+                    project_ID: result.project_ID,
+                    cVpath :result.cVpath,
+                    conflictDoc:result.conflictDoc,
                     startTime
                 });
             })
             .then(function (projectObj) {
                 return Promise.props({
                   startTime: new Date(),
-                  pdf: convertDocToPdf(cfilePath, project._id),
+                  pdf: convertDocToPdf(projectObj.cfilePath, projectObj.project_ID),
                   project: projectObj.project,
                   label: projectObj.label,
-                  comments: projectObj.comments
+                  comments: projectObj.comments,
+                  cfilePath: projectObj.cfilePath,
+                  cVpath:projectObj.cVpath,
+                  conflictDoc:projectObj.conflictDoc
                 });
             })
             .then(function (result) {
                 console.log("Convert from doc to pdf python : %dms", new Date() - result.startTime);
-                var cpath = cfilePath.replace(path.extname(cfilePath), ".pdf");
+                var cpath = result.cfilePath.replace(path.extname(result.cfilePath), ".pdf");
                  result.label.pdfPath = {
                     location: cpath,
-                    destination: cVpath.replace(path.extname(cVpath), ".pdf")
+                    destination: result.cVpath.replace(path.extname(result.cVpath), ".pdf")
                 }; 
                 result.label.labelCopy = {
-                    location: cfilePath,
-                    destination: cVpath
+                    location: result.cfilePath,
+                    destination: result.cVpath
                 };
-                result.label.originalPath = conflictDoc.originalPath;
+                result.label.originalPath = result.conflictDoc.originalPath;
                 //Update inprocess flag once comapre successed
                 ProductLabel.findByIdAndUpdate(req.body._id,{$set:{inProcess:false}},{new:false}).then(data=>{
                         console.log("Inprocess flag updated")
                     }).catch(err=>{ 
                         console.log(err)
                 })
-                return Promise.props({
+                 return Promise.props({
                     project: result.label.save().then(function () {
                         return ProductLabel.findById(result.project._id).populate("documents");
                     }),
