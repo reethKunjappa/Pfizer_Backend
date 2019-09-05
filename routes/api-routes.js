@@ -1,11 +1,11 @@
 let router = require('express').Router();
-//var passport = require('passport');
+var passport = require('passport');
 var config = require('../config/database');
-//require('../config/passport')(passport);
-//var jwt = require('jsonwebtoken');
+require("../config/passport")(passport);
+var jwt = require('jsonwebtoken');
 
 
-//var authController = require('../controllers/authentication.controller');
+var authController = require('../controllers/authentication.controller');
 var productlabelController = require('../controllers/productlabel.controller');
 var documentController = require('../controllers/document.controller');
 var dashboardController = require('../controllers/dashboard.controller');
@@ -15,9 +15,9 @@ var checkListController = require('../controllers/checklist.controller');
 //var preferenceController = require('../controllers/preference.controller');
 var configController = require('../controllers/config.controller')
 //authController
-/* router.route('/auth/register').post(authController.new);
-router.route('/signin').post(authController.signin);
- */
+router.route('/auth/register').post(authController.new);
+router.route('/auth/signin').post(authController.signin);
+ 
 //Project Controller
 router.route('/labelling/createProject').post(productlabelController.newProject);
 router.route('/labelling/getProjects').post(productlabelController.getProjects);
@@ -69,7 +69,7 @@ router.route("/labelling/createComments").post(commentsController.createComments
 router.route("/labelling/updateComments").post(commentsController.updateComments);
 
 // Verify JWT Jokens from REST
-/* function verifyToken(req, res, next) {
+ function verifyToken(req, res, next) {
     var token = req.headers['authorization'];
     if (!token)
         return res.status(403).send({ auth: false, message: 'No token provided.' });
@@ -80,5 +80,5 @@ router.route("/labelling/updateComments").post(commentsController.updateComments
         next();
     });
 }
- */
+ 
 module.exports = router;

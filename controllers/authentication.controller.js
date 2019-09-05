@@ -1,32 +1,46 @@
-/*  var jwt = require('jsonwebtoken');
+var jwt = require('jsonwebtoken');
 var config = require('../config/database');
 const { User } = require('../models/model');
-const { responseGenerator } = require('../utility/commonUtils');
+const { responseGenerator, inputValidator, log } = require('../utility/commonUtils');
+const { logMessage } = require('../config/appConfig');
 
 // Create user
 exports.new = function (req, res) {
-    if (!req.body.username || !req.body.password) {
-        res.json(responseGenerator(-1, "Username and Password are mandatory !!"));
-    } else {
-        var user = new User();
-        user.username = req.body.username;
-        user.password = req.body.password;
-        user.emailid = req.body.emailid;
-        user.firstname = req.body.firstname;
-        user.lastname = req.body.lastname;
-        user.active = true;
-        user.mobile = req.body.mobile;
-        user.roles = req.body.roles;
-        // save the contact and check for errors
-        user.save(function (err) {
-            user.password = "";
-            if (err)
-                res.json(responseGenerator(-1, "Unable to create user", err));
 
-            res.json(responseGenerator(0, "Successfully created user", user));
-        });
-    }
-};
+ try {
+        let inputValidationFields = {
+            username: 'required|string',
+            firstname: 'required|string',
+            lastname: 'required|string',
+            access: 'required|array'
+        };
+        inputValidator(req.body, inputValidationFields).then((result) => {
+            if (!result.isValid) {
+                throw result.message;
+            }
+        }).then(() => {
+            var user = new User();
+            user.username = req.body.username;
+            user.password = "Admin";
+            user.firstname = req.body.firstname;
+            user.lastname = req.body.lastname;
+            user.access = req.body.access;
+            // save the contact and check for errors
+            user.save(function(err) {
+                user.password = "";
+                if (err) return res.json(responseGenerator(-1, "User "+req.body.username+" exist, Please try with diffrent username!", err.errmsg));
+
+                return res.json(responseGenerator(0, "Successfully created user", user));
+            });
+        }).catch((err) => {
+            log.error({ err: err }, logMessage.validatationerror);
+            res.json(responseGenerator(-1, "Mandatory fields|type are missing", ""));
+        })
+    }catch (err) {
+        log.error({ err: err }, logMessage.unhandlederror);
+        res.json(responseGenerator(-1, "Something went wrong"));
+    }   
+}
 
 
 // User Signin
@@ -57,5 +71,3 @@ exports.signin = function (req, res) {
     }
 
 };
-
-  */

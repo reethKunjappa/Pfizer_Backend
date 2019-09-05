@@ -1,37 +1,26 @@
-/*  var mongoose = require('mongoose');
+ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var bcrypt = require('bcrypt-nodejs');
 
 var UserSchema = new Schema({
-    username: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    firstname: {
-        type: String,
-    },
-    lastname: {
-        type: String
-    },
-    emailid: {
-        type: String,
-    },
-    roles: {
-        type: Array,
-    },
-    active: {
-        type: String,
-        required: true
-    },
-    mobile: {
-        type: String,
-    }
-
+  firstname: {
+    type: String
+  },
+  lastname: {
+    type: String
+  },
+  username: {
+    type: String,
+    unique: true,
+    required: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  access: {
+    type: Array
+  }
 });
 
 
@@ -64,4 +53,4 @@ UserSchema.methods.comparePassword = function (passw, cb) {
     });
 };
 
-module.exports = mongoose.model('User', UserSchema);  */
+module.exports = mongoose.model('User', UserSchema);  
