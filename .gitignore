@@ -8,3 +8,4 @@ logs/
 report.html
 .nyc_output
 coverage/
+*.log
