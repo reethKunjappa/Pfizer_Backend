@@ -70,7 +70,7 @@ exports.getCount = (req, res, next) => {
 
         try {
             let inputValidationFields = {
-                userId: 'required',
+                //userId: 'required',
             };
             inputValidator(req.body, inputValidationFields).then((result) => {
                 if (!result.isValid) {
