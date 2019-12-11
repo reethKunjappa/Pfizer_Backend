@@ -44,10 +44,9 @@ module.exports.updateComments = function (req, res, next) {
             return res.status(400).send({ success: false, err: err.message });
         });
 } 
-/*
+
 module.exports.deleteComments = function (req, res, next) {
-    var query = req.body;
-    return Comments.findOneAndDelete(query)
+    return Comments.findByIdAndRemove(req.body.commentId)
         .then(function (result) {
             return res.send({ result, status: { code: 0, message: "Comment deleted!" } });
         }).catch(function (err) {
@@ -55,6 +54,6 @@ module.exports.deleteComments = function (req, res, next) {
             return res.status(400).send({ success: false, err: err.message });
         });
 }
- */
+
 
  

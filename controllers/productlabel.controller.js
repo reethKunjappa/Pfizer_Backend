@@ -154,8 +154,8 @@ var conflictDoc = {
 exports.compare = function (req, res) {
     let inputValidationFields = {
       _id: "required",
-     // criteria: "required",
-     // match: "required"
+      criteria: "required",
+      match: "required"
     };
     log.info({ req: req.body }, "Conflict/Compare called"); 
      inputValidator(req.body, inputValidationFields).then((result) => {
@@ -247,8 +247,8 @@ exports.compare = function (req, res) {
                           drugName: project.drugName,
                           project_id: project._id,
                           rulesConfig: data.ruleConfig,
-                          //criteria: criteria,
-                          //match: match
+                          criteria: criteria,
+                          match: match
                         };
                         var basePath = path.resolve("./");
                         mapSpecApIPayload.project_id = project._id;
@@ -357,7 +357,7 @@ exports.compare = function (req, res) {
             })
             .then(function (result) {
                 console.log("Python [1]. Result:")
-                //console.log(result)
+                console.log(result)
               
                 console.log("Python End Execution Time : %dms", new Date())
                 console.log("Total Python Execution Time : %dms", new Date() - pythonStartTime)

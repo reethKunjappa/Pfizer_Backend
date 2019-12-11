@@ -67,6 +67,7 @@ router.post("/labelling/dashboard", dashboardController.getCount);
 router.route("/labelling/getAllComments").post(commentsController.getAllComments);
 router.route("/labelling/createComments").post(commentsController.createComments);
 router.route("/labelling/updateComments").post(commentsController.updateComments);
+router.route("/labelling/deleteComments").post(commentsController.deleteComments);
 
 // Verify JWT Jokens from REST
  function verifyToken(req, res, next) {
