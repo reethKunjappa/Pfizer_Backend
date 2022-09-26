@@ -36,7 +36,7 @@
     "passport-jwt": "^4.0.0",
     "pdf-image": "^2.0.0",
     "pdftoimage": "^1.0.0",
-    "pm2": "^3.5.0",
+    "pm2": "^5.2.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
     "rimraf": "^2.6.3",
